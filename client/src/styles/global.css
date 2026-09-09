@@ -2809,7 +2809,7 @@ button:hover {
   content: "";
   position: absolute;
   inset: 0;
-  background-image: url("/image-6.png");
+  background-image: url("/book-cover.png");
   background-size: cover;
   background-position: center;
   opacity: 0.12;
@@ -5446,7 +5446,7 @@ body {
 }
 
 .easy-hero {
-  background-image: linear-gradient(90deg, rgba(30, 18, 11, .97) 0%, rgba(74, 29, 0, .9) 55%, rgba(123, 53, 0, .8) 100%), url("/image-2.png");
+  background-image: linear-gradient(90deg, rgba(30, 18, 11, .97) 0%, rgba(74, 29, 0, .9) 55%, rgba(123, 53, 0, .8) 100%), url("/book-cover.png");
   background-size: cover;
   background-position: center 38%;
 }
@@ -5712,7 +5712,7 @@ textarea:focus {
 }
 
 .contact-hero-card::before {
-  background-image: linear-gradient(110deg, rgba(5, 8, 5, .82), rgba(6, 59, 32, .72) 58%, rgba(11, 122, 67, .62)), url("/image-6.png");
+  background-image: linear-gradient(110deg, rgba(5, 8, 5, .82), rgba(6, 59, 32, .72) 58%, rgba(11, 122, 67, .62)), url("/book-cover.png");
   background-size: cover;
   background-position: center;
   opacity: .52;

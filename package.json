@@ -1,5 +1,15 @@
 {
   "dependencies": {
     "googleapis": "^173.0.0"
+  },
+  "name": "resyin-publications",
+  "private": true,
+  "version": "1.0.0",
+  "description": "RESYIN Publications bookstore",
+  "scripts": {
+    "dev": "npm --prefix client run dev",
+    "build": "npm --prefix client run build",
+    "lint": "npm --prefix client run lint",
+    "start:server": "npm --prefix server start"
   }
 }

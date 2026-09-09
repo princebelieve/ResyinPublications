@@ -1,5 +1,5 @@
 {
-  "name": "resyin-publication-server",
+  "name": "resyin-publications-server",
   "version": "1.0.0",
   "main": "src/index.js",
   "scripts": {
@@ -23,5 +23,6 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
-  }
+  },
+  "private": true
 }
