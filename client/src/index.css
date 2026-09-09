@@ -1,0 +1,62 @@
+:root {
+  font-family: system-ui, Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #ffffff;
+  color: var(--text);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.bank-select {
+  position: relative;
+}
+
+.bank-select-options {
+  position: absolute;
+  z-index: 20;
+  width: 100%;
+  max-height: 230px;
+  overflow-y: auto;
+  margin-top: 4px;
+  padding: 6px;
+  background: #fff;
+  border: 1px solid #d8d8d8;
+  border-radius: 8px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.14);
+}
+
+.bank-select-options button {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  color: inherit;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: 5px;
+}
+
+.bank-select-options button:hover,
+.bank-select-options button[aria-selected="true"] {
+  background: rgba(124, 74, 32, 0.1);
+}
+
+.bank-select-options p {
+  margin: 8px;
+  color: #666;
+  font-size: 0.9rem;
+}

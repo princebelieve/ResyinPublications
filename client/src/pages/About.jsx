@@ -1,0 +1,10 @@
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
+import useScrollReveal from "../hooks/useScrollReveal";
+
+const values = ["Integrity", "Excellence", "Service", "Respect", "Innovation", "Teamwork", "Continuous Learning"];
+
+export default function About() {
+  useScrollReveal();
+  return <><Navbar /><section className="about-hero reveal"><div className="container about-hero-grid"><div className="about-copy"><span className="eyebrow">ABOUT RESYIN PUBLICATIONS</span><h1>Remarkable books.<br />A world of ideas.</h1><p>RESYIN Publications is the home of Prof. Johnson A. Egonmwan’s books and a growing catalog from other authors and publishers.</p></div><div className="about-image-wrap hover-lift easy-about-mark"><img src="/book-cover.png" alt="A book by Prof. Johnson A. Egonmwan" /><div className="easy-about-badge"><span>GOOD BOOKS</span><strong>KNOWLEDGE<br />COMMUNITY</strong><small>THE RESYIN</small></div></div></div></section><section className="section reveal"><div className="container about-story"><div className="story-card hover-lift"><h2 className="title">Our Vision</h2><p className="muted">To connect readers with ideas that inform, inspire, and encourage lifelong learning.</p></div><div className="story-card hover-lift"><h2 className="title">Our Mission</h2><ul className="promise-list"><li>Make books easy to discover by title, author, and subject.</li><li>Bring Prof. Johnson A. Egonmwan’s work to more readers.</li><li>Welcome books from established and emerging authors.</li><li>Support readers, educators, schools, and libraries.</li></ul></div></div></section><section className="section-alt reveal"><div className="container"><div className="values-header"><span className="eyebrow">OUR CORE VALUES</span><h2 className="title">A community built to grow responsibly.</h2></div><div className="service-grid">{values.map((value) => <div className="service-card hover-lift" key={value}><h3>{value}</h3><p>We put {value.toLowerCase()} into the way we serve members, customers, partners and our wider community.</p></div>)}</div></div></section><Footer /></>;
+}

@@ -1,0 +1,88 @@
+# =====================
+# DEPENDENCIES
+# =====================
+node_modules
+**/node_modules
+
+# =====================
+# BUILD OUTPUTS
+# =====================
+dist
+dist-ssr
+build
+**/dist
+**/build
+
+# =====================
+# ENV FILES (VERY IMPORTANT)
+# =====================
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+**/.env
+**/.env.*
+!server/.env.example
+
+# =====================
+# LOGS
+# =====================
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# =====================
+# OS FILES
+# =====================
+.DS_Store
+Thumbs.db
+
+# =====================
+# EDITORS
+# =====================
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# =====================
+# VITE / FRONTEND SPECIFIC
+# =====================
+.vite
+.cache
+
+# =====================
+# BACKEND SPECIFIC (optional but useful)
+# =====================
+coverage
+*.tsbuildinfo
+
+# =====================
+# OPTIONAL: LOCAL UPLOADS (if you use uploads folder)
+# =====================
+uploads
+**/uploads
+
+# =====================
+# DOCUMENTATION & PLANNING (Local Reference Only)
+# =====================
+NOTIFICATION_SYSTEM_PLAN.md
+**/PLAN.md
+**/TODO.md
+NOTIFICATION_SYSTEM_COMPLETE.md
+PUSH_NOTIFICATIONS_SETUP.md
+IMPLEMENTATION_STATUS.md
+QUICK_REFERENCE.md
+SEO_GOOGLE_BOT_SETUP.md
+SEO_IMPLEMENTATION_SUMMARY.md
+TECHNICAL_CHANGES.md
+TESTING_GUIDE.md
