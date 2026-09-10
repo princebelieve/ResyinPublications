@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import GoogleSignInButton from "../components/GoogleSignInButton";
-import { loginUser, signInWithGoogle } from "../services/api";
+import { loginUser, resendVerificationEmail, signInWithGoogle } from "../services/api";
 import useAuth from "../context/AuthContext";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -13,6 +13,7 @@ export default function Login() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [resendMessage, setResendMessage] = useState("");
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -62,7 +63,28 @@ export default function Login() {
     } catch (error) {
       console.error(error);
 
-      alert(error?.message || "Unable to login. Please try again.");
+      if (error?.message?.toLowerCase().includes("verify your email")) {
+        setResendMessage("Your account needs email verification. Request a fresh verification email below.");
+      } else {
+        alert(error?.message || "Unable to login. Please try again.");
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleResendVerification() {
+    if (!form.email.trim()) {
+      setResendMessage("Enter your email address first.");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      await resendVerificationEmail(form.email.trim());
+      setResendMessage("A fresh verification email has been requested. Check your inbox and spam folder.");
+    } catch (error) {
+      setResendMessage(error?.message || "Unable to resend the verification email.");
     } finally {
       setSubmitting(false);
     }
@@ -146,6 +168,17 @@ export default function Login() {
             <button type="submit" className="btn-primary" disabled={submitting}>
               {submitting ? "Signing in..." : "Sign In"}
             </button>
+
+            {resendMessage && (
+              <div className="auth-message" role="status">
+                <p>{resendMessage}</p>
+                {resendMessage.toLowerCase().includes("request a fresh") && (
+                  <button type="button" onClick={handleResendVerification} disabled={submitting}>
+                    Resend verification email
+                  </button>
+                )}
+              </div>
+            )}
 
             <div
               style={{

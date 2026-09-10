@@ -35,8 +35,7 @@ const sendVerificationLink = async ({ email, token }) => {
   console.log(`Verification link for ${email}: ${verificationUrl}`);
 
   try {
-    await sendEmailVerification({ to: email, verificationUrl });
-    return true;
+    return await sendEmailVerification({ to: email, verificationUrl });
   } catch (err) {
     console.warn(
       `Failed to send verification email to ${email}: ${err?.message || err}`,

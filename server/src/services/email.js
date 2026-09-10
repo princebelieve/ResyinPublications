@@ -18,6 +18,15 @@ function createGmailClient() {
   return google.gmail({ version: "v1", auth: oauth2Client });
 }
 
+function hasGmailOAuthConfig() {
+  return Boolean(
+    process.env.GMAIL_CLIENT_ID &&
+      process.env.GMAIL_CLIENT_SECRET &&
+      process.env.GMAIL_REFRESH_TOKEN &&
+      process.env.EMAIL_USER,
+  );
+}
+
 function base64UrlEncode(str) {
   return Buffer.from(str)
     .toString("base64")
@@ -73,9 +82,11 @@ console.log(
 
 // SEND RESET EMAIL
 async function sendResetPasswordEmail({ to, resetUrl }) {
-  if (!process.env.GMAIL_REFRESH_TOKEN || !process.env.EMAIL_USER) {
-    console.warn("OAuth2 not configured. Reset link:", resetUrl);
-    return;
+  if (!hasGmailOAuthConfig()) {
+    console.error(
+      "Gmail OAuth2 is not configured. Set GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN, and EMAIL_USER in Render.",
+    );
+    return false;
   }
   const subject = "Password reset request";
   const text = `You requested a password reset. Use the link below:\n\n${resetUrl}`;
@@ -92,9 +103,11 @@ async function sendResetPasswordEmail({ to, resetUrl }) {
 }
 
 async function sendPasswordResetSuccessEmail({ to }) {
-  if (!process.env.GMAIL_REFRESH_TOKEN || !process.env.EMAIL_USER) {
-    console.warn("OAuth2 not configured. Password reset success email skipped for:", to);
-    return;
+  if (!hasGmailOAuthConfig()) {
+    console.error(
+      "Gmail OAuth2 is not configured. Password reset success email skipped.",
+    );
+    return false;
   }
 
   const subject = "Your password has been reset";
@@ -116,9 +129,11 @@ async function sendPasswordResetSuccessEmail({ to }) {
 
 // SEND VERIFICATION EMAIL
 async function sendEmailVerification({ to, verificationUrl }) {
-  if (!process.env.GMAIL_REFRESH_TOKEN || !process.env.EMAIL_USER) {
-    console.warn("OAuth2 not configured. Verification link:", verificationUrl);
-    return;
+  if (!hasGmailOAuthConfig()) {
+    console.error(
+      "Gmail OAuth2 is not configured. Verification email was not sent. Set GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN, and EMAIL_USER in Render.",
+    );
+    return false;
   }
   const subject = "Verify your email address";
   const text = `Please verify your email:\n\n${verificationUrl}`;
@@ -129,6 +144,7 @@ async function sendEmailVerification({ to, verificationUrl }) {
   try {
     await sendViaGmail({ to, subject, text, html });
     console.log(`Verification email sent to ${to}`);
+    return true;
   } catch (err) {
     console.error("Email send failed:", err?.message || err);
     throw err;
@@ -136,7 +152,7 @@ async function sendEmailVerification({ to, verificationUrl }) {
 }
 
 async function sendAnnouncementEmail({ to, title, body, link }) {
-  if (!process.env.GMAIL_REFRESH_TOKEN || !process.env.EMAIL_USER) return;
+  if (!hasGmailOAuthConfig()) return false;
   const subject = title || "New RESYIN announcement";
   const html = `<h2>${subject}</h2><p>${body}</p>${link ? `<p><a href="${link}">View announcement</a></p>` : ""}`;
   return sendViaGmail({ to, subject, text: `${body}\n\n${link || ""}`, html });
