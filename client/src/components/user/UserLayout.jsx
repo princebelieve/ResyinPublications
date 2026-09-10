@@ -46,9 +46,9 @@ export default function UserLayout({ children }) {
       icon: <ShoppingBag size={18} />,
     },
 
-    ...(user?.distributorStatus === "approved" ? [{ to: "/distributor", label: "Distributor Dashboard", icon: <ShoppingBag size={18} /> }] : []),
+    ...(user?.distributorStatus === "approved" ? [{ to: "/distributor", label: "Publisher Dashboard", icon: <ShoppingBag size={18} /> }] : []),
 
-    ...(user?.distributorStatus !== "approved" && user?.distributorStatus !== "pending" ? [{ to: "/dashboard?distributor=apply", label: "Become a Distributor", icon: <Handshake size={18} /> }] : []),
+    ...(user?.distributorStatus !== "approved" && user?.distributorStatus !== "pending" ? [{ to: "/dashboard?distributor=apply", label: "Publish With RESYIN", icon: <Handshake size={18} /> }] : []),
 
     {
       to: "/checkout",
@@ -64,7 +64,7 @@ export default function UserLayout({ children }) {
 
     {
       to: "/collection",
-      label: "Browse the Book Catalog",
+      label: "Browse Books",
       icon: <Home size={18} />,
     },
 

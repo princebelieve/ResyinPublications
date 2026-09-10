@@ -14,9 +14,10 @@ const {
 } = require("../services/email");
 const RefreshToken = require("../models/RefreshToken");
 
-const adminEmails = (process.env.ADMIN_EMAILS || "")
+const adminEmails = new Set((process.env.ADMIN_EMAILS || "")
   .split(",")
-  .map((email) => email.trim().toLowerCase());
+  .map((email) => email.trim().toLowerCase())
+  .filter(Boolean));
 
 // ----------------------
 // EMAIL HELPERS
@@ -74,7 +75,7 @@ const registerUser = async (req, res) => {
       name: String(name).trim(),
       email: normalizedEmail,
       password: hashedPassword,
-      role: adminEmails.includes(normalizedEmail) ? "admin" : "user",
+      role: adminEmails.has(normalizedEmail) ? "admin" : "user",
       emailVerified: false,
       emailVerificationToken,
       emailVerificationExpires,
@@ -127,6 +128,11 @@ const loginUser = async (req, res) => {
 
     if (user.isSuspended) {
       return res.status(403).json({ message: "This account is suspended. Please contact support." });
+    }
+
+    if (adminEmails.has(normalizedEmail) && user.role !== "admin") {
+      user.role = "admin";
+      await user.save();
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -214,7 +220,7 @@ const googleSignIn = async (req, res) => {
         name: payload.name || normalizedEmail,
         email: normalizedEmail,
         password: hashedPassword,
-        role: adminEmails.includes(normalizedEmail) ? "admin" : "user",
+        role: adminEmails.has(normalizedEmail) ? "admin" : "user",
         emailVerified: true,
       });
     } else if (!user.emailVerified) {

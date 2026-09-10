@@ -79,25 +79,25 @@ export default function AdminLayout({ children }) {
 
     {
       to: "/admin/distributors",
-      label: "Distributors",
+      label: "Authors & Partners",
       icon: <UsersRound size={18} />,
     },
 
     {
       to: "/admin/sales",
-      label: "Sales",
+      label: "Book Sales",
       icon: <BarChart3 size={18} />,
     },
 
     {
       to: "/admin/stock",
-      label: "Stock Alerts",
+      label: "Inventory Alerts",
       icon: <AlertTriangle size={18} />,
     },
 
     {
       to: "/admin/delivery",
-      label: "Delivery Board",
+      label: "Fulfillment Board",
       icon: <Truck size={18} />,
     },
 
@@ -109,7 +109,7 @@ export default function AdminLayout({ children }) {
 
     {
       to: "/admin/transport-companies",
-      label: "Transport Companies",
+      label: "Delivery Partners",
       icon: <Truck size={18} />,
     },
 
@@ -121,7 +121,7 @@ export default function AdminLayout({ children }) {
 
     {
       to: "/admin/publisher-subscription-settings",
-      label: "Publisher Subscription",
+      label: "Author Subscriptions",
       icon: <WalletCards size={18} />,
     },
 
@@ -133,7 +133,7 @@ export default function AdminLayout({ children }) {
 
     {
       to: "/admin/content",
-      label: "Content Studio",
+      label: "Editorial Content",
       icon: <Video size={18} />,
     },
 
@@ -151,23 +151,23 @@ export default function AdminLayout({ children }) {
 
     {
       to: "/dashboard",
-      label: "Personal Dashboard",
+      label: "Account Dashboard",
       icon: <User size={18} />,
     },
 
     ...(user?.distributorStatus === "approved" ? [{
       to: "/distributor",
-      label: "Distributor Dashboard",
+      label: "Publisher Dashboard",
       icon: <Handshake size={18} />,
     }] : user?.distributorStatus !== "pending" ? [{
       to: "/dashboard?distributor=apply",
-      label: "Become a Distributor",
+      label: "Publish With RESYIN",
       icon: <Handshake size={18} />,
     }] : []),
 
     {
       to: "/profile",
-      label: "My Profile",
+      label: "Account Profile",
       icon: <User size={18} />,
     },
 

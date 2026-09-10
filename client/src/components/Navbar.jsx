@@ -98,18 +98,18 @@ export default function Navbar() {
       <div className="desktop-nav">
         <details className="store-account"><summary>{isLoggedIn ? "Your account" : "Hello, sign in"}</summary><div className="nav-links">
           <Link to="/">Home</Link>
-          <Link to="/collection">Shop</Link>
+          <Link to="/collection">Browse Books</Link>
           <Link to="/about">About</Link>
           <Link to="/contact">Contact</Link>
-          <Link to="/how-to-use">How It Works</Link>
+          <Link to="/how-to-use">Reader Guide</Link>
 
           {isLoggedIn && <Link to="/cart">Cart</Link>}
 
           {isLoggedIn && <Link to="/dashboard">Dashboard</Link>}
 
-          {isLoggedIn && user?.distributorStatus !== "approved" && user?.distributorStatus !== "pending" && <Link to="/dashboard?distributor=apply">Become a Distributor</Link>}
+          {isLoggedIn && user?.distributorStatus !== "approved" && user?.distributorStatus !== "pending" && <Link to="/dashboard?distributor=apply">Publish With RESYIN</Link>}
 
-          {isLoggedIn && user?.distributorStatus === "approved" && <Link to="/distributor">Distributor Dashboard</Link>}
+          {isLoggedIn && user?.distributorStatus === "approved" && <Link to="/distributor">Publisher Dashboard</Link>}
 
           {isAdmin && <Link to="/admin">Admin</Link>}
 
@@ -220,7 +220,7 @@ export default function Navbar() {
           </Link>
 
           <Link to="/collection" onClick={() => setOpen(false)}>
-            Shop
+            Browse Books
           </Link>
 
           <Link to="/about" onClick={() => setOpen(false)}>
@@ -232,7 +232,7 @@ export default function Navbar() {
           </Link>
 
           <Link to="/how-to-use" onClick={() => setOpen(false)}>
-            How It Works
+            Reader Guide
           </Link>
 
           {isLoggedIn && (
@@ -253,13 +253,13 @@ export default function Navbar() {
 
               {user?.distributorStatus !== "approved" && user?.distributorStatus !== "pending" && (
                 <Link to="/dashboard?distributor=apply" onClick={() => setOpen(false)}>
-                  Become a Distributor
+                  Publish With RESYIN
                 </Link>
               )}
 
               {user?.distributorStatus === "approved" && (
                 <Link to="/distributor" onClick={() => setOpen(false)}>
-                  Distributor Dashboard
+                  Publisher Dashboard
                 </Link>
               )}
 

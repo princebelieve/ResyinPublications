@@ -29,12 +29,17 @@ export default function useClickOutside(refs, handler, enabled = true) {
       savedHandler.current(event);
     }
 
-    document.addEventListener("mousedown", listener);
-    document.addEventListener("touchstart", listener);
+    document.addEventListener("pointerdown", listener, true);
+
+    function handleKeyDown(event) {
+      if (event.key === "Escape") savedHandler.current(event);
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      document.removeEventListener("mousedown", listener);
-      document.removeEventListener("touchstart", listener);
+      document.removeEventListener("pointerdown", listener, true);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [refs, enabled]);
 }
