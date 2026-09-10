@@ -103,12 +103,33 @@ function ScrollToTop() {
   return null;
 }
 
+function CaptureInstallPrompt() {
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (event) => {
+      // Prevent automatic install prompt
+      event.preventDefault();
+      // Store the event for later use
+      window.__deferredPrompt = event;
+      console.log("✅ Install prompt captured and ready");
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  return null;
+}
+
 export default function App() {
   return (
     <CartProvider>
       <NotificationProvider>
         <CanonicalUpdater />
         <ScrollToTop />
+        <CaptureInstallPrompt />
         <SupportAssistant />
         <PwaNotificationBanner />
         <PwaInstallBanner />

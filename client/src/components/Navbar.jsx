@@ -189,9 +189,10 @@ export default function Navbar() {
                 return;
               }
 
-              if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const choice = await deferredPrompt.userChoice;
+              const installPrompt = deferredPrompt || window.__deferredPrompt;
+              if (installPrompt) {
+                installPrompt.prompt();
+                const choice = await installPrompt.userChoice;
                 if (choice && choice.outcome === "accepted") {
                   setDeferredPrompt(null);
                   window.__deferredPrompt = null;
