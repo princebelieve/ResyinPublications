@@ -138,15 +138,14 @@ export default function AdminProducts() {
           }}
         >
           <div>
-            <h1>Admin Products</h1>
+            <h1>Book Catalog</h1>
             <p style={{ marginTop: 8, color: "#555" }}>
-              Manage product catalog and edit existing listings from the product
-              grid.
+              Manage book listings, editions, covers, pricing, and availability.
             </p>
           </div>
 
           <button type="button" onClick={() => navigate("/admin/products/new")}>
-            Add Product
+            New Book Listing
           </button>
         </div>
 
@@ -157,7 +156,7 @@ export default function AdminProducts() {
             type="search"
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
-            placeholder="Name, category, brand, SKU, or GTIN"
+            placeholder="Title, author, subject, ISBN, or SKU"
             autoComplete="off"
           />
         </div>

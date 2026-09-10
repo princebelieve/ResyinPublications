@@ -67,19 +67,19 @@ export default function AdminLayout({ children }) {
 
     {
       to: "/admin/products",
-      label: "Products",
+      label: "Book Catalog",
       icon: <Package size={18} />,
     },
 
     {
       to: "/admin/orders",
-      label: "Orders",
+      label: "Book Orders",
       icon: <ShoppingCart size={18} />,
     },
 
     {
       to: "/admin/distributors",
-      label: "Authors & Partners",
+      label: "Partner Inventory",
       icon: <UsersRound size={18} />,
     },
 
@@ -157,11 +157,11 @@ export default function AdminLayout({ children }) {
 
     ...(user?.distributorStatus === "approved" ? [{
       to: "/distributor",
-      label: "Publisher Dashboard",
+      label: "Partner Dashboard",
       icon: <Handshake size={18} />,
     }] : user?.distributorStatus !== "pending" ? [{
       to: "/dashboard?distributor=apply",
-      label: "Publish With RESYIN",
+      label: "Become a RESYIN Partner",
       icon: <Handshake size={18} />,
     }] : []),
 

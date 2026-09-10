@@ -15,7 +15,7 @@ export default function AdminDeliveryBoard() {
 
   return (
     <>
-      <h2>Delivery Pipeline</h2>
+      <h2>Order Fulfillment Pipeline</h2>
 
       <div className="kanban">
         {stages.map((stage) => (

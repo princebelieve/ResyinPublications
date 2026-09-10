@@ -39,7 +39,7 @@ export default function AdminOrders() {
   return (
     <>
       <div className="page">
-        <h1>Admin Orders</h1>
+        <h1>Book Orders</h1>
 
         {loading ? (
           <p>Loading orders...</p>

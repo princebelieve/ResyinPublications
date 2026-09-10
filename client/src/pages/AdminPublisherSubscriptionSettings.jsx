@@ -45,7 +45,7 @@ export default function AdminPublisherSubscriptionSettings() {
 
   return (
     <div className="page">
-      <h1>Publisher Subscription Settings</h1>
+      <h1>Author Subscription Settings</h1>
       <p className="muted">Configure the annual listing subscription for external authors. Settings are inactive until enabled.</p>
       <form className="form" onSubmit={save}>
         <label className="wizard-checkbox"><input type="checkbox" name="enabled" checked={settings.enabled} onChange={change} /><span>Enable external publisher subscriptions</span></label>

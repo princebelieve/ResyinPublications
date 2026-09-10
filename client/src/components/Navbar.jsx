@@ -125,9 +125,9 @@ export default function Navbar() {
 
           {isLoggedIn && <Link to="/dashboard">Dashboard</Link>}
 
-          {isLoggedIn && user?.distributorStatus !== "approved" && user?.distributorStatus !== "pending" && <Link to="/dashboard?distributor=apply">Publish With RESYIN</Link>}
+          {isLoggedIn && user?.distributorStatus !== "approved" && user?.distributorStatus !== "pending" && <Link to="/dashboard?distributor=apply">Become a RESYIN Partner</Link>}
 
-          {isLoggedIn && user?.distributorStatus === "approved" && <Link to="/distributor">Publisher Dashboard</Link>}
+          {isLoggedIn && user?.distributorStatus === "approved" && <Link to="/distributor">Partner Dashboard</Link>}
 
           {isAdmin && <Link to="/admin">Admin</Link>}
 
@@ -271,13 +271,13 @@ export default function Navbar() {
 
               {user?.distributorStatus !== "approved" && user?.distributorStatus !== "pending" && (
                 <Link to="/dashboard?distributor=apply" onClick={() => setOpen(false)}>
-                  Publish With RESYIN
+                  Become a RESYIN Partner
                 </Link>
               )}
 
               {user?.distributorStatus === "approved" && (
                 <Link to="/distributor" onClick={() => setOpen(false)}>
-                  Publisher Dashboard
+                  Partner Dashboard
                 </Link>
               )}
 

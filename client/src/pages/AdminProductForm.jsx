@@ -61,11 +61,11 @@ export default function AdminProductForm() {
         }}
       >
         <div>
-          <h1>{editingProduct ? "Edit Product" : "Create Product"}</h1>
+          <h1>{editingProduct ? "Edit Book Listing" : "New Book Listing"}</h1>
           <p style={{ marginTop: 8, color: "#555" }}>
             {editingProduct
-              ? "Update product details and pricing."
-              : "Fill in product details, pricing, inventory, and images."}
+              ? "Update book details, editions, pricing, and availability."
+              : "Add book details, editions, pricing, inventory, and cover images."}
           </p>
           {!editingProduct && isSubadmin && (
             <p style={{ marginTop: 8, color: "#8c6a00" }}>
