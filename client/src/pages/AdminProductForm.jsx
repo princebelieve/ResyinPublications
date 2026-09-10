@@ -61,7 +61,7 @@ export default function AdminProductForm() {
         }}
       >
         <div>
-          <h1>{editingProduct ? "Edit Book Listing" : "New Book Listing"}</h1>
+          <h1>{editingProduct ? "Edit Uploaded Books" : "Upload Books"}</h1>
           <p style={{ marginTop: 8, color: "#555" }}>
             {editingProduct
               ? "Update book details, editions, pricing, and availability."
@@ -69,14 +69,14 @@ export default function AdminProductForm() {
           </p>
           {!editingProduct && isSubadmin && (
             <p style={{ marginTop: 8, color: "#8c6a00" }}>
-              As a subadmin, new product submissions will be sent for admin
+              As a subadmin, new book uploads will be sent for admin
               review and kept hidden until approved.
             </p>
           )}
         </div>
 
         <button type="button" onClick={() => navigate("/admin/products")}>
-          Back to products
+          Back to Uploaded Books
         </button>
       </div>
 

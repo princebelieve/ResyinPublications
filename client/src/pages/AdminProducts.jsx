@@ -138,14 +138,14 @@ export default function AdminProducts() {
           }}
         >
           <div>
-            <h1>Book Catalog</h1>
+            <h1>Uploaded Books</h1>
             <p style={{ marginTop: 8, color: "#555" }}>
-              Manage book listings, editions, covers, pricing, and availability.
+              Manage uploaded books, editions, covers, pricing, and availability.
             </p>
           </div>
 
           <button type="button" onClick={() => navigate("/admin/products/new")}>
-            New Book Listing
+            Upload Books
           </button>
         </div>
 

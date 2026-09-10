@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Navbar from "../components/Navbar";
 import ProductGrid from "../components/ProductGrid";
 import Footer from "../components/Footer";
+import RelatedProductCarousel from "../components/RelatedProductCarousel";
 import { useSearchParams } from "react-router-dom";
 
 
@@ -130,6 +131,8 @@ export default function Collection() {
 
             {!loading && !loadError && <p className="store-result-count" role="status">{filteredProducts.length} book{filteredProducts.length === 1 ? "" : "s"} found</p>}
           </div>
+
+          {!loading && filteredProducts.length > 0 && <RelatedProductCarousel products={filteredProducts} />}
 
           <div>
             {loading ? (
