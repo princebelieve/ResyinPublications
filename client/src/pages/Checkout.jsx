@@ -45,9 +45,9 @@ export default function Checkout() {
 
   }
 
-  async function removeCheckoutItem(productId) {
+  async function removeCheckoutItem(productId, editionKey) {
     setCheckoutError("");
-    await removeFromCart(productId);
+    await removeFromCart(productId, editionKey);
   }
 
   useEffect(() => {
@@ -291,7 +291,7 @@ export default function Checkout() {
                   <button
                     type="button"
                     className="checkout-remove-item"
-                    onClick={() => removeCheckoutItem(item.productId)}
+                    onClick={() => removeCheckoutItem(item.productId, item.editionKey)}
                     aria-label={`Remove ${item.name} from checkout`}
                   >
                     Remove

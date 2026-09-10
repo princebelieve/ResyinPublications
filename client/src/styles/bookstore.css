@@ -115,5 +115,585 @@ button,input,select,textarea { font-family:inherit; }
 .store-account summary { cursor:pointer; padding:12px 0; white-space:nowrap; }
 .bookstore-navbar .store-account .nav-links { position:absolute; right:0; top:100%; display:flex; flex-direction:column; align-items:stretch; gap:0; width:230px; padding:10px; background:white; border:1px solid #d5d9dc; border-radius:4px; box-shadow:0 8px 25px #0003; }
 .bookstore-navbar .store-account:not([open]) .nav-links { display:none; }
+
+/* Make the complete RESYIN logo lockup legible in the primary header. */
+.bookstore-navbar .navbar-brand {
+	display: inline-flex;
+	align-items: center;
+	gap: 12px;
+	min-width: 278px;
+}
+
+.bookstore-navbar .store-brand-mark {
+	display: block;
+	width: 58px;
+	height: 58px;
+	flex: 0 0 58px;
+	border-radius: 0;
+	object-fit: contain;
+	background: #fff;
+}
+
+.bookstore-navbar .brand-name {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 5px;
+	max-width: none;
+	color: #ffffff;
+	font-family: "Playfair Display", Georgia, serif;
+	font-size: 1.62rem;
+	font-weight: 700;
+	letter-spacing: .035em;
+	line-height: .95;
+	text-transform: uppercase;
+	white-space: nowrap;
+}
+
+.bookstore-navbar .brand-name span {
+	display: block;
+	color: #f6c85f;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: .82rem;
+	font-weight: 800;
+	letter-spacing: .32em;
+	line-height: 1;
+	margin: 0;
+}
+
+@media (max-width: 900px) {
+	.bookstore-navbar .navbar-brand {
+		min-width: 0;
+	}
+
+	.bookstore-navbar .store-brand-mark {
+		width: 46px;
+		height: 46px;
+		flex-basis: 46px;
+	}
+
+	.bookstore-navbar .brand-name {
+		font-size: 1.15rem;
+	}
+
+	.bookstore-navbar .brand-name span {
+		font-size: .58rem;
+		letter-spacing: .22em;
+	}
+}
+
+/* RESYIN utility notices: editorial panels, not rounded promotional pills. */
+.resyin-install-card,
+.resyin-notification-card,
+.resyin-privacy-note {
+	position: fixed;
+	z-index: 1200;
+	box-sizing: border-box;
+	color: #211914;
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+.resyin-install-card {
+	right: 28px;
+	bottom: 28px;
+	display: grid;
+	grid-template-columns: 38px minmax(0, 1fr) auto 24px;
+	align-items: center;
+	gap: 12px;
+	width: min(410px, calc(100vw - 56px));
+	padding: 14px;
+	border: 1px solid #2d5368;
+	border-left: 5px solid #2d5368;
+	border-radius: 0;
+	background: #eef4f6;
+	box-shadow: 0 12px 30px rgba(20, 39, 49, .18);
+	animation: resyinNoticeEnter .25s ease-out both;
+}
+
+.resyin-install-mark {
+	display: grid;
+	place-items: center;
+	width: 38px;
+	height: 38px;
+	background: #2d5368;
+	color: #f8d779;
+}
+
+.resyin-install-copy,
+.resyin-notification-content,
+.resyin-privacy-copy {
+	display: grid;
+	gap: 4px;
+	min-width: 0;
+}
+
+.resyin-install-copy strong,
+.resyin-notification-content strong,
+.resyin-privacy-copy strong {
+	color: #182d3b;
+	font-size: .82rem;
+	letter-spacing: .02em;
+}
+
+.resyin-install-copy span,
+.resyin-notification-content p,
+.resyin-privacy-copy p {
+	margin: 0;
+	color: #536872;
+	font-size: .74rem;
+	line-height: 1.4;
+}
+
+.resyin-install-action,
+.resyin-notification-accept,
+.resyin-privacy-accept {
+	min-height: 34px;
+	padding: 0 11px;
+	border: 0;
+	border-radius: 0;
+	background: #d17a3f;
+	color: #211914;
+	font-size: .72rem;
+	font-weight: 700;
+}
+
+.resyin-install-close,
+.resyin-notification-dismiss {
+	display: grid;
+	place-items: center;
+	width: 24px;
+	height: 24px;
+	padding: 0;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+	color: #536872;
+}
+
+.resyin-notification-card {
+	right: 28px;
+	bottom: 28px;
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: center;
+	gap: 18px;
+	width: min(430px, calc(100vw - 56px));
+	padding: 18px 20px;
+	border-top: 3px solid #d17a3f;
+	border-bottom: 1px solid #c9bba9;
+	background: #fffaf3;
+	box-shadow: 0 12px 30px rgba(33, 25, 20, .16);
+	animation: resyinNoticeEnter .25s ease-out both;
+}
+
+.resyin-notification-content {
+	grid-template-columns: 25px minmax(0, 1fr);
+	align-items: start;
+}
+
+.resyin-notification-icon {
+	color: #a84420;
+}
+
+.resyin-notification-actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.resyin-privacy-note {
+	right: 28px;
+	bottom: 28px;
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: center;
+	gap: 22px;
+	width: min(560px, calc(100vw - 56px));
+	padding: 16px 18px;
+	border: 1px solid #b9cbd1;
+	border-radius: 0;
+	background: #f1f6f7;
+	box-shadow: 0 12px 30px rgba(20, 39, 49, .15);
+}
+
+.resyin-privacy-copy a {
+	color: #2d5368;
+	font-weight: 700;
+}
+
+.resyin-privacy-actions {
+	display: flex;
+	align-items: center;
+}
+
+@keyframes resyinNoticeEnter {
+	from { opacity: 0; transform: translateY(10px); }
+	to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+	.resyin-install-card,
+	.resyin-notification-card,
+	.resyin-privacy-note {
+		right: 14px;
+		bottom: 14px;
+		left: 14px;
+		width: auto;
+	}
+
+	.resyin-notification-card,
+	.resyin-privacy-note {
+		grid-template-columns: 1fr;
+		gap: 12px;
+	}
+
+	.resyin-notification-actions,
+	.resyin-privacy-actions {
+		justify-content: flex-end;
+	}
+}
+
+.digital-book-files-panel,
+.digital-book-downloads {
+	margin-top: 28px;
+	padding: 22px;
+	border: 1px solid #cfc1b3;
+	background: #fffaf3;
+}
+
+.edition-selector {
+	display: grid;
+	gap: 7px;
+	max-width: 320px;
+	margin: 18px 0;
+	color: #4e4037;
+	font-size: .82rem;
+	font-weight: 700;
+}
+
+.edition-selector select {
+	border: 1px solid #cfc1b3;
+	border-radius: 0;
+	background: #fffaf3;
+}
+
+.book-editions-panel {
+	margin-top: 28px;
+	padding: 22px;
+	border: 1px solid #cfc1b3;
+	background: #fffaf3;
+}
+
+.book-editions-heading {
+	display: flex;
+	align-items: start;
+	justify-content: space-between;
+	gap: 18px;
+	margin-bottom: 18px;
+}
+
+.book-editions-heading h2 {
+	margin: 4px 0;
+	color: #211914;
+	font-family: "Playfair Display", Georgia, serif;
+}
+
+.book-editions-heading p {
+	margin: 4px 0;
+	color: #675950;
+	font-size: .86rem;
+}
+
+.book-editions-heading > button,
+.book-editions-panel form > button {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	min-height: 40px;
+	padding: 0 13px;
+	border: 0;
+	border-radius: 0;
+	background: #a84420;
+	color: #fffaf3;
+	font-weight: 700;
+}
+
+.book-edition-row {
+	display: grid;
+	grid-template-columns: 1.1fr 1.2fr repeat(5, minmax(80px, 1fr)) 36px;
+	gap: 8px;
+	margin-bottom: 10px;
+}
+
+.book-edition-row input,
+.book-edition-row select {
+	min-width: 0;
+	border: 1px solid #cfc1b3;
+	border-radius: 0;
+	background: #fff;
+}
+
+.book-edition-row > button {
+	display: grid;
+	place-items: center;
+	padding: 0;
+	border: 1px solid #cfc1b3;
+	border-radius: 0;
+	background: transparent;
+	color: #a84420;
+}
+
+.book-editions-panel form > button {
+	margin-top: 8px;
+}
+
+@media (max-width: 900px) {
+	.book-editions-heading {
+		display: grid;
+	}
+
+	.book-edition-row {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		padding-bottom: 14px;
+		border-bottom: 1px solid #cfc1b3;
+	}
+}
+
+.digital-book-files-heading,
+.digital-book-files-form,
+.digital-book-downloads > div {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 14px;
+	align-items: center;
+}
+
+.digital-book-files-heading {
+	justify-content: space-between;
+	margin-bottom: 18px;
+}
+
+.digital-book-files-heading h2,
+.digital-book-downloads strong {
+	margin: 4px 0;
+	color: #211914;
+	font-family: "Playfair Display", Georgia, serif;
+}
+
+.digital-book-files-heading p,
+.digital-book-downloads p {
+	margin: 4px 0;
+	color: #675950;
+	font-size: .86rem;
+	line-height: 1.5;
+}
+
+.digital-book-files-form label {
+	display: grid;
+	gap: 6px;
+	flex: 1 1 240px;
+	color: #4e4037;
+	font-size: .82rem;
+	font-weight: 700;
+}
+
+.digital-book-files-form button,
+.digital-book-downloads button {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	min-height: 40px;
+	padding: 0 13px;
+	border: 0;
+	border-radius: 0;
+	background: #a84420;
+	color: #fffaf3;
+	font-weight: 700;
+}
+
+.digital-book-files-form p {
+	flex-basis: 100%;
+	margin: 0;
+	color: #a84420;
+}
+
+.digital-book-downloads > strong,
+.digital-book-downloads > p {
+	display: block;
+}
+
+.digital-book-downloads > div {
+	margin-top: 12px;
+}
+
+/* RESYIN catalog advert: an editorial strip, not a legacy promotional card. */
+.resyin-advert {
+	padding: 34px 0 18px;
+	background: #f7f3ed;
+}
+
+.resyin-advert-frame {
+	position: relative;
+	display: grid;
+	grid-template-columns: 190px minmax(0, 1fr) auto;
+	min-height: 238px;
+	overflow: hidden;
+	border-top: 1px solid #cfc1b3;
+	border-bottom: 1px solid #cfc1b3;
+	background: #fffaf3;
+}
+
+.resyin-advert-image-wrap {
+	position: relative;
+	min-height: 238px;
+	overflow: hidden;
+	background: #e9ddcf;
+}
+
+.resyin-advert-image {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: center;
+}
+
+.resyin-advert-index {
+	position: absolute;
+	right: 12px;
+	bottom: 12px;
+	padding: 5px 7px;
+	background: #211914;
+	color: #fffaf3;
+	font-size: .68rem;
+	font-weight: 700;
+	letter-spacing: .1em;
+}
+
+.resyin-advert-copy {
+	align-self: center;
+	max-width: 620px;
+	padding: 30px 42px;
+}
+
+.resyin-advert-label {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: #a84420;
+	font-size: .7rem;
+	font-weight: 700;
+	letter-spacing: .14em;
+}
+
+.resyin-advert-copy h2 {
+	margin: 14px 0 10px;
+	color: #211914;
+	font: 600 clamp(2rem, 3.2vw, 3.4rem)/1.02 "Playfair Display", Georgia, serif;
+}
+
+.resyin-advert-copy p {
+	max-width: 520px;
+	margin: 0 0 18px;
+	color: #675950;
+	line-height: 1.65;
+}
+
+.resyin-advert-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	color: #a84420;
+	font-size: .88rem;
+	font-weight: 700;
+}
+
+.resyin-advert-controls {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	align-self: end;
+	padding: 0 24px 24px 0;
+}
+
+.resyin-advert-controls > button {
+	display: grid;
+	place-items: center;
+	width: 34px;
+	height: 34px;
+	padding: 0;
+	border: 1px solid #b9a99a;
+	border-radius: 50%;
+	background: transparent;
+	color: #211914;
+}
+
+.resyin-advert-controls > button:hover {
+	border-color: #a84420;
+	color: #a84420;
+}
+
+.resyin-advert-dots {
+	display: flex;
+	gap: 5px;
+}
+
+.resyin-advert-dots button {
+	width: 7px;
+	height: 7px;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: #cfc1b3;
+}
+
+.resyin-advert-dots button.active {
+	background: #a84420;
+}
+
+@media (max-width: 760px) {
+	.resyin-advert-frame {
+		grid-template-columns: 112px minmax(0, 1fr);
+		min-height: 210px;
+	}
+
+	.resyin-advert-image-wrap {
+		min-height: 210px;
+	}
+
+	.resyin-advert-copy {
+		padding: 24px 20px;
+	}
+
+	.resyin-advert-copy h2 {
+		font-size: 1.85rem;
+	}
+
+	.resyin-advert-copy p {
+		font-size: .86rem;
+	}
+
+	.resyin-advert-controls {
+		position: absolute;
+		right: 14px;
+		bottom: 12px;
+		padding: 0;
+	}
+}
+
+@media (max-width: 460px) {
+	.resyin-advert-frame {
+		grid-template-columns: 1fr;
+	}
+
+	.resyin-advert-image-wrap {
+		min-height: 150px;
+		max-height: 180px;
+	}
+
+	.resyin-advert-copy {
+		padding: 22px 18px 70px;
+	}
+}
 .bookstore-navbar .store-account .nav-links > a,.bookstore-navbar .store-account .nav-links > button { display:block; padding:9px 12px; font-size:13px; color:#18212b; text-align:left; background:white; border:0; }
 .bookstore-navbar .store-account .nav-links > a:hover,.bookstore-navbar .store-account .nav-links > button:hover { background:#f1f3f4; }

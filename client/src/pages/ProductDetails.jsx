@@ -7,7 +7,7 @@ import Navbar from "../components/Navbar";
 
 import { useCart } from "../context/CartContext";
 
-import { getProductById, getShippingSummary } from "../services/api";
+import { getDigitalBookDownloadUrl, getProductById, getShippingSummary } from "../services/api";
 
 import { setMetaTags, setProductSchema, getShareUrl } from "../utils/metaTags";
 
@@ -20,8 +20,10 @@ export default function ProductDetails() {
   const [addLoading, setAddLoading] = useState(false);
   const [addSuccess, setAddSuccess] = useState(false);
   const [addError, setAddError] = useState("");
+  const [downloadMessage, setDownloadMessage] = useState("");
   const [expandedDescription, setExpandedDescription] = useState(false);
   const [deliveryInfo, setDeliveryInfo] = useState(null);
+  const [selectedEdition, setSelectedEdition] = useState("paperback");
   const { addToCart, cart } = useCart();
 
   useEffect(() => {
@@ -32,6 +34,7 @@ export default function ProductDetails() {
         const data = await getProductById(id);
 
         setProduct(data);
+        if (data?.editions?.length) setSelectedEdition(data.editions[0].format);
 
         if (data) {
           const productUrl =
@@ -134,17 +137,40 @@ export default function ProductDetails() {
           <div className="product-detail-content">
             <h1>{product.name}</h1>
 
-            {product.salePrice != null && Number(product.salePrice) < Number(product.price) ? (
+            {(() => {
+              const edition = product.editions?.find((item) => item.format === selectedEdition);
+              const basePrice = edition ? edition.price : product.price;
+              const salePrice = edition ? edition.salePrice : product.salePrice;
+              return salePrice != null && Number(salePrice) < Number(basePrice) ? (
               <div>
-                <h2>₦{Number(product.salePrice).toLocaleString()}</h2>
-                <p className="muted"><s>₦{Number(product.price).toLocaleString()}</s></p>
+                <h2>₦{Number(salePrice).toLocaleString()}</h2>
+                <p className="muted"><s>₦{Number(basePrice).toLocaleString()}</s></p>
               </div>
             ) : (
-              <h2>₦{Number(product?.price || 0).toLocaleString()}</h2>
-            )}
+              <h2>₦{Number(basePrice || 0).toLocaleString()}</h2>
+            );
+            })()}
+
+            {(product.editions?.length > 0) && <label className="edition-selector">Edition
+              <select value={selectedEdition} onChange={(event) => setSelectedEdition(event.target.value)}>
+                {product.editions.map((edition) => <option key={edition.format} value={edition.format}>{edition.label || edition.format} — ₦{Number(edition.salePrice != null && edition.salePrice < edition.price ? edition.salePrice : edition.price).toLocaleString()}</option>)}
+              </select>
+            </label>}
 
             {product.shortDescription && <p className="muted">{product.shortDescription}</p>}
-            <p><strong>{Number(product.stock || 0) > 0 ? "In stock" : "Currently unavailable"}</strong></p>
+            <p><strong>{Number(product.editions?.find((item) => item.format === selectedEdition)?.stock ?? product.stock ?? 0) > 0 ? "In stock" : "Currently unavailable"}</strong></p>
+
+            {(product.digitalFiles?.pdf?.key || product.digitalFiles?.epub?.key) && (
+              <div className="digital-book-downloads">
+                <strong>Digital editions</strong>
+                <p className="muted">Downloads become available after your payment is confirmed.</p>
+                <div>
+                  {product.digitalFiles?.pdf?.key && <button type="button" onClick={async () => { try { setDownloadMessage(""); const result = await getDigitalBookDownloadUrl(product._id, "pdf"); window.location.href = result.downloadUrl; } catch (error) { setDownloadMessage(error.message || "Sign in and complete payment to download this book."); } }}>Download PDF</button>}
+                  {product.digitalFiles?.epub?.key && <button type="button" onClick={async () => { try { setDownloadMessage(""); const result = await getDigitalBookDownloadUrl(product._id, "epub"); window.location.href = result.downloadUrl; } catch (error) { setDownloadMessage(error.message || "Sign in and complete payment to download this book."); } }}>Download EPUB</button>}
+                </div>
+                {downloadMessage && <p className="inline-toast error">{downloadMessage}</p>}
+              </div>
+            )}
 
             {(product.fullDescription || product.shortDescription) && (
               <div className="product-description">
@@ -180,7 +206,7 @@ export default function ProductDetails() {
                 setAddSuccess(false);
                 setAddLoading(true);
 
-                const result = await addToCart(product);
+                const result = await addToCart(product, 1, selectedEdition);
 
                 setAddLoading(false);
 
@@ -209,7 +235,7 @@ export default function ProductDetails() {
                 setAddLoading(true);
 
                 const alreadyInCart = cart.some(
-                  (item) => item.productId === product._id,
+                  (item) => item.productId === product._id && item.editionKey === selectedEdition,
                 );
 
                 if (alreadyInCart) {
@@ -218,7 +244,7 @@ export default function ProductDetails() {
                   return;
                 }
 
-                const result = await addToCart(product);
+                const result = await addToCart(product, 1, selectedEdition);
                 setAddLoading(false);
 
                 if (result.success) navigate("/checkout");

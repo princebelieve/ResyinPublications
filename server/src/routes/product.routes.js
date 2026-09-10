@@ -21,11 +21,48 @@ const {
 } = require("../middleware/auth");
 
 const Product = require("../models/Product");
+const Order = require("../models/Order");
+const { createPrivateBookDownloadUrl } = require("../config/r2");
 
 // PUBLIC
 router.get("/", getProducts);
 
 router.get("/categories", getProductCategories);
+
+router.get("/:id/download/:format", protect, async (req, res) => {
+  try {
+    const format = String(req.params.format || "").toLowerCase();
+    if (!['pdf', 'epub'].includes(format)) {
+      return res.status(400).json({ message: "Choose PDF or EPUB." });
+    }
+
+    const product = await Product.findOne({
+      _id: req.params.id,
+      hidden: { $ne: true },
+      status: { $ne: "inactive" },
+      approved: { $ne: false },
+    }).select("name digitalFiles").lean();
+    if (!product) return res.status(404).json({ message: "Book not found." });
+
+    const order = await Order.findOne({
+      userId: String(req.user.id),
+      paymentStatus: "paid",
+      items: { $elemMatch: { productId: String(product._id) } },
+    }).select("_id").sort({ paidAt: -1, createdAt: -1 }).lean();
+    if (!order) {
+      return res.status(403).json({ message: "Complete payment for this book before downloading it." });
+    }
+
+    const digitalFile = product.digitalFiles?.[format];
+    if (!digitalFile?.key) return res.status(404).json({ message: `A ${format.toUpperCase()} file is not available for this book.` });
+
+    const downloadUrl = await createPrivateBookDownloadUrl(digitalFile.key, digitalFile.fileName || `${product.name}.${format}`);
+    return res.json({ downloadUrl, expiresIn: 600, format, book: product.name });
+  } catch (error) {
+    console.error("Digital book download error:", error);
+    return res.status(500).json({ message: "Unable to prepare the download." });
+  }
+});
 
 // DYNAMIC SITEMAP FOR SEO - must come before /:id route
 router.get("/sitemap/xml", async (req, res) => {
@@ -84,6 +121,8 @@ router.post(
     { name: "coverImage", maxCount: 1 },
     { name: "gallery", maxCount: 20 },
     { name: "pieceImages", maxCount: 50 },
+    { name: "pdfFile", maxCount: 1 },
+    { name: "epubFile", maxCount: 1 },
   ]),
   createProduct,
 );
@@ -96,6 +135,8 @@ router.put(
     { name: "coverImage", maxCount: 1 },
     { name: "gallery", maxCount: 20 },
     { name: "pieceImages", maxCount: 50 },
+    { name: "pdfFile", maxCount: 1 },
+    { name: "epubFile", maxCount: 1 },
   ]),
   updateProduct,
 );

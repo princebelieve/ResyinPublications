@@ -660,6 +660,43 @@ button {
   word-wrap: break-word;
 }
 
+.store-brand-mark {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border-radius: 9px;
+  object-fit: cover;
+}
+
+.bookstore-navbar .brand-name {
+  display: grid;
+  gap: 2px;
+  max-width: none;
+  color: #211914;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1.02rem;
+  letter-spacing: .04em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.bookstore-navbar .brand-name span {
+  color: #a84420;
+  font-family: "DM Sans", sans-serif;
+  font-size: .58rem;
+  font-weight: 700;
+  letter-spacing: .2em;
+}
+
+.store-footer-mark {
+  display: block;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 14px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
 .desktop-nav {
   display: flex;
   align-items: center;
@@ -779,6 +816,12 @@ button {
   .logo {
     width: 34px;
     height: 34px;
+  }
+
+  .store-brand-mark {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
   }
 
   .brand-name {
@@ -6713,6 +6756,301 @@ button:hover,
   }
 
   .resyin-button {
+    width: 100%;
+  }
+}
+
+/* RESYIN contact hub: utility-first bookstore support layout. */
+.resyin-contact-page {
+  background: #f7f3ed;
+  color: #211914;
+  font-family: "DM Sans", sans-serif;
+}
+
+.resyin-contact-header {
+  border-bottom: 1px solid #ddd1c4;
+  background: #fffaf3;
+}
+
+.resyin-contact-header-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 250px;
+  gap: 60px;
+  align-items: end;
+  min-height: 330px;
+  padding-top: 68px;
+  padding-bottom: 62px;
+}
+
+.resyin-contact-kicker {
+  margin: 0 0 14px;
+  color: #a84420;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .15em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.resyin-contact-header h1 {
+  max-width: 760px;
+  margin: 0 0 18px;
+  color: #211914;
+  font: 600 clamp(3rem, 6vw, 6rem)/.98 "Playfair Display", Georgia, serif;
+}
+
+.resyin-contact-lede {
+  max-width: 640px;
+  margin: 0;
+  color: #675950;
+  font-size: 1.05rem;
+  line-height: 1.8;
+}
+
+.resyin-contact-reference {
+  display: grid;
+  gap: 8px;
+  padding: 20px 0 0;
+  border-top: 2px solid #a84420;
+}
+
+.resyin-contact-reference span,
+.resyin-contact-reference small {
+  color: #675950;
+  font-size: .8rem;
+}
+
+.resyin-contact-reference strong {
+  color: #211914;
+  font: 600 1.8rem/1 "Playfair Display", Georgia, serif;
+}
+
+.resyin-contact-content {
+  padding-top: 54px;
+  padding-bottom: 100px;
+}
+
+.resyin-contact-topics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid #cfc1b3;
+  border-bottom: 1px solid #cfc1b3;
+}
+
+.resyin-contact-topic {
+  position: relative;
+  min-height: 184px;
+  padding: 25px 26px 24px 0;
+  border-right: 1px solid #cfc1b3;
+}
+
+.resyin-contact-topic + .resyin-contact-topic {
+  padding-left: 26px;
+}
+
+.resyin-contact-topic:last-child {
+  border-right: 0;
+}
+
+.resyin-contact-topic svg:first-child {
+  color: #a84420;
+}
+
+.resyin-contact-topic svg:last-child {
+  position: absolute;
+  right: 26px;
+  bottom: 25px;
+  color: #a84420;
+}
+
+.resyin-contact-topic h2 {
+  margin: 18px 0 8px;
+  color: #211914;
+  font: 600 1.4rem/1.1 "Playfair Display", Georgia, serif;
+}
+
+.resyin-contact-topic p {
+  max-width: 270px;
+  margin: 0;
+  color: #675950;
+  font-size: .88rem;
+  line-height: 1.6;
+}
+
+.resyin-contact-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(260px, .8fr);
+  gap: 60px;
+  margin-top: 70px;
+}
+
+.resyin-contact-form-panel h2,
+.resyin-contact-aside h2 {
+  margin: 0 0 28px;
+  color: #211914;
+  font: 600 clamp(2rem, 3.3vw, 3.5rem)/1.05 "Playfair Display", Georgia, serif;
+}
+
+.resyin-contact-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px 18px;
+  max-width: 760px;
+}
+
+.resyin-contact-form label {
+  display: grid;
+  gap: 8px;
+  color: #4e4037;
+  font-size: .8rem;
+  font-weight: 700;
+}
+
+.resyin-contact-form input,
+.resyin-contact-form select,
+.resyin-contact-form textarea {
+  box-sizing: border-box;
+  width: 100%;
+  border: 1px solid #cfc1b3;
+  border-radius: 0;
+  background: #fffaf3;
+  color: #211914;
+  font: inherit;
+}
+
+.resyin-contact-form textarea {
+  resize: vertical;
+}
+
+.resyin-contact-form-wide {
+  grid-column: 1 / -1;
+}
+
+.resyin-contact-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: fit-content;
+  min-height: 46px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 0;
+  background: #a84420;
+  color: #fffaf3;
+  font-weight: 700;
+}
+
+.resyin-contact-submit:hover {
+  background: #7e321a;
+}
+
+.resyin-contact-status {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #a84420;
+  font-size: .9rem;
+  line-height: 1.5;
+}
+
+.resyin-contact-aside {
+  display: grid;
+  align-content: start;
+  gap: 34px;
+  padding-left: 34px;
+  border-left: 1px solid #cfc1b3;
+}
+
+.resyin-contact-aside > div:first-child {
+  display: grid;
+  gap: 12px;
+}
+
+.resyin-contact-aside h2 {
+  margin-bottom: 10px;
+}
+
+.resyin-contact-aside a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #a84420;
+  font-size: .9rem;
+  font-weight: 600;
+}
+
+.resyin-contact-aside a:hover {
+  color: #7e321a;
+}
+
+.resyin-contact-note {
+  padding-top: 18px;
+  border-top: 1px solid #cfc1b3;
+}
+
+.resyin-contact-note strong {
+  color: #211914;
+  font-size: .88rem;
+}
+
+.resyin-contact-note p {
+  margin: 8px 0 0;
+  color: #675950;
+  font-size: .86rem;
+  line-height: 1.65;
+}
+
+@media (max-width: 800px) {
+  .resyin-contact-header-inner,
+  .resyin-contact-grid {
+    grid-template-columns: 1fr;
+    gap: 38px;
+  }
+
+  .resyin-contact-header-inner {
+    min-height: 0;
+    padding-top: 54px;
+    padding-bottom: 48px;
+  }
+
+  .resyin-contact-reference {
+    max-width: 280px;
+  }
+
+  .resyin-contact-topics {
+    grid-template-columns: 1fr;
+  }
+
+  .resyin-contact-topic,
+  .resyin-contact-topic + .resyin-contact-topic {
+    min-height: 0;
+    padding: 22px 0;
+    border-right: 0;
+    border-bottom: 1px solid #cfc1b3;
+  }
+
+  .resyin-contact-topic:last-child {
+    border-bottom: 0;
+  }
+
+  .resyin-contact-aside {
+    padding-left: 0;
+    border-left: 0;
+    border-top: 1px solid #cfc1b3;
+    padding-top: 36px;
+  }
+}
+
+@media (max-width: 520px) {
+  .resyin-contact-form {
+    grid-template-columns: 1fr;
+  }
+
+  .resyin-contact-form-wide {
+    grid-column: auto;
+  }
+
+  .resyin-contact-submit {
     width: 100%;
   }
 }

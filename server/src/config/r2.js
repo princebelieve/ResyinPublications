@@ -3,6 +3,7 @@ const {
   S3Client,
   PutObjectCommand,
   DeleteObjectCommand,
+  GetObjectCommand,
 } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const { randomUUID } = require("crypto");
@@ -15,6 +16,8 @@ const s3 = new S3Client({
     secretAccessKey: process.env.R2_SECRET_KEY,
   },
 });
+
+const digitalBucket = () => process.env.R2_DIGITAL_BUCKET || process.env.R2_BUCKET;
 
 async function uploadToR2(file, folder = "general") {
   const cleanName = file.originalname.replace(/\s+/g, "-");
@@ -42,6 +45,26 @@ async function uploadBufferToR2(buffer, { fileName = "upload", contentType = "ap
     ContentType: contentType,
   }));
   return `${process.env.R2_PUBLIC_BASE_URL.replace(/\/$/, "")}/${key}`;
+}
+
+async function uploadPrivateBookFile(file, format) {
+  const key = `books/${format}/${randomUUID()}-${safeFileName(file.originalname)}`;
+  await s3.send(new PutObjectCommand({
+    Bucket: digitalBucket(),
+    Key: key,
+    Body: file.buffer,
+    ContentType: file.mimetype,
+  }));
+  return { key, fileName: file.originalname, size: file.size, contentType: file.mimetype };
+}
+
+async function createPrivateBookDownloadUrl(key, fileName) {
+  if (!key) throw new Error("Digital book file is not configured.");
+  return getSignedUrl(s3, new GetObjectCommand({
+    Bucket: digitalBucket(),
+    Key: key,
+    ResponseContentDisposition: `attachment; filename="${safeFileName(fileName || "book-download")}"`,
+  }), { expiresIn: 10 * 60 });
 }
 
 function safeFileName(fileName = "upload") {
@@ -97,4 +120,4 @@ async function deleteFromR2(fileUrl) {
   return true;
 }
 
-module.exports = { uploadToR2, uploadBufferToR2, createPresignedContentUpload, deleteFromR2 };
+module.exports = { uploadToR2, uploadBufferToR2, uploadPrivateBookFile, createPrivateBookDownloadUrl, createPresignedContentUpload, deleteFromR2 };

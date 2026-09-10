@@ -5,8 +5,10 @@
   <meta charset="UTF-8" />
 
   <!-- Browser tab icon -->
-  <link rel="icon" type="image/svg+xml" href="/resyin-mark.svg" />
-  <link rel="apple-touch-icon" href="/resyin-icon-192.png" />
+  <link rel="icon" type="image/x-icon" href="/favicon-32.ico" sizes="32x32" />
+  <link rel="icon" type="image/x-icon" href="/favicon-16.ico" sizes="16x16" />
+  <link rel="shortcut icon" href="/favicon-32.ico" />
+  <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="manifest" href="/manifest.json" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
@@ -19,26 +21,27 @@
   <!-- Google Identity Services for sign in with Google -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <!-- Theme color -->
-  <meta name="theme-color" content="#063b20" />
-  <meta name="msapplication-TileColor" content="#063b20" />
+  <meta name="theme-color" content="#2a1200" />
+  <meta name="msapplication-TileColor" content="#2a1200" />
   <style>
     body {
       margin: 0;
-      background-color: #f6e8c4;
+      background-color: #fffaf5;
     }
   </style>
   <meta name="robots" content="index, follow" />
   <meta name="application-name" content="RESYIN Publications" />
+  <meta name="google-site-verification" content="%VITE_GOOGLE_SITE_VERIFICATION%" />
   <meta name="description"
-    content="RESYIN Publications offers thoughtfully curated books and reader-focused discoveries by Prof. Johnson A. Egonmwan." />
+    content="RESYIN Publications is a multi-author bookstore and publishing platform for academic, professional, literary, and general-interest books." />
   <!-- Social share preview -->
   <meta property="og:title" content="RESYIN Publications | Book Store" />
   <meta property="og:site_name" content="RESYIN Publications" />
   <meta property="og:locale" content="en_NG" />
   <meta property="og:description"
-    content="RESYIN Publications offers thoughtfully curated books and reader-focused discoveries by Prof. Johnson A. Egonmwan." />
-  <meta property="og:image" content="https://resyinpublications.com/book-cover.png" />
-  <meta property="og:image:alt" content="A book by Prof. Johnson A. Egonmwan" />
+    content="RESYIN Publications is a multi-author bookstore and publishing platform for academic, professional, literary, and general-interest books." />
+  <meta property="og:image" content="https://resyinpublications.com/icon-512.png" />
+  <meta property="og:image:alt" content="RESYIN Publications book catalog" />
   <meta property="og:image:width" content="512" />
   <meta property="og:image:height" content="512" />
   <meta property="og:image:type" content="image/png" />
@@ -46,9 +49,9 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="RESYIN Publications | Book Store" />
   <meta name="twitter:description"
-    content="RESYIN Publications offers thoughtfully curated books and reader-focused discoveries by Prof. Johnson A. Egonmwan." />
-  <meta name="twitter:image:alt" content="A book by Prof. Johnson A. Egonmwan" />
-  <meta name="twitter:image" content="https://resyinpublications.com/book-cover.png" />
+    content="RESYIN Publications is a multi-author bookstore and publishing platform for academic, professional, literary, and general-interest books." />
+  <meta name="twitter:image:alt" content="RESYIN Publications book catalog" />
+  <meta name="twitter:image" content="https://resyinpublications.com/icon-512.png" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://resyinpublications.com/" />
   <script type="application/ld+json">
@@ -57,15 +60,22 @@
       "@type": "Organization",
       "name": "RESYIN Publications",
       "url": "https://resyinpublications.com/",
-      "logo": "https://resyinpublications.com/resyin-mark.svg",
-      "description": "RESYIN Publications offers thoughtfully curated books and reader-focused discoveries by Prof. Johnson A. Egonmwan.",
+      "logo": "https://resyinpublications.com/icon-512.png",
+      "description": "RESYIN Publications is a multi-author bookstore and publishing platform for academic, professional, literary, and general-interest books.",
       "email": "info@resyinpublications.com",
-      "telephone": ["+2349041441646", "+2348034621513"]
+      "telephone": ["+2349041441646", "+2348034621513"],
+      "sameAs": ["https://resyinpublications.com"],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "info@resyinpublications.com",
+        "contactType": "customer service",
+        "areaServed": "NG"
+      }
     }
   </script>
 </head>
 
-<body style="background-color: #f6e8c4;">
+<body style="background-color: #fffaf5;">
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
 </body>

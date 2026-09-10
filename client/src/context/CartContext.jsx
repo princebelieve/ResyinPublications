@@ -39,13 +39,16 @@ export function CartProvider({ children }) {
           if (!p) return null;
 
           const productObj = typeof p === "object" ? p : { _id: p };
+          const edition = productObj.editions?.find((item) => item.format === (item.editionKey || "paperback"));
 
           return {
             productId: productObj._id || productObj,
             name: productObj.name || "",
             image: productObj.coverImage || "",
-            price: Number(productObj.price || 0),
+            price: Number(edition?.salePrice != null && edition.salePrice < edition.price ? edition.salePrice : edition?.price ?? productObj.price ?? 0),
             quantity: item.quantity,
+            editionKey: item.editionKey || "paperback",
+            format: item.editionKey || "paperback",
             deliveryCategory: productObj.deliveryCategory || "",
             category: productObj.category || "",
           };
@@ -72,7 +75,7 @@ export function CartProvider({ children }) {
     loadCart();
   }, [token]);
 
-  async function addToCart(product, quantity = 1) {
+  async function addToCart(product, quantity = 1, editionKey = "paperback") {
     if (!token) {
       return {
         success: false,
@@ -86,14 +89,15 @@ export function CartProvider({ children }) {
     }
 
     // A rapid double-click must not create two add requests.
-    if (addingProductIds.current.has(productId)) {
+    const cartKey = `${productId}:${editionKey}`;
+    if (addingProductIds.current.has(cartKey)) {
       return { success: false, message: "This product is already being added." };
     }
 
-    addingProductIds.current.add(productId);
+    addingProductIds.current.add(cartKey);
 
     try {
-      await addToCartApi(token, productId, quantity);
+      await addToCartApi(token, productId, quantity, editionKey);
       await loadCart();
       return {
         success: true,
@@ -105,33 +109,33 @@ export function CartProvider({ children }) {
         message: err?.message || "Failed to add item to cart.",
       };
     } finally {
-      addingProductIds.current.delete(productId);
+      addingProductIds.current.delete(cartKey);
     }
   }
 
-  async function removeFromCart(productId) {
+  async function removeFromCart(productId, editionKey = "paperback") {
     try {
-      await removeFromCartApi(token, productId);
+      await removeFromCartApi(token, productId, editionKey);
       loadCart();
     } catch (err) {
       console.error(err);
     }
   }
 
-  async function updateQuantity(productId, quantity) {
+  async function updateQuantity(productId, quantity, editionKey = "paperback") {
     if (quantity <= 0) {
-      await removeFromCart(productId);
+      await removeFromCart(productId, editionKey);
       return;
     }
 
-    setCart((current) => current.map((item) => item.productId === productId ? { ...item, quantity } : item));
+    setCart((current) => current.map((item) => item.productId === productId && item.editionKey === editionKey ? { ...item, quantity } : item));
 
     const previousTimer = quantityTimers.current.get(productId);
     if (previousTimer) window.clearTimeout(previousTimer);
 
     const timer = window.setTimeout(async () => {
       try {
-        await updateCartApi(token, productId, quantity);
+        await updateCartApi(token, productId, quantity, editionKey);
       } catch (err) {
         console.error(err);
         await loadCart();

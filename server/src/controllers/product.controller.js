@@ -1,7 +1,7 @@
 // server/src/controllers/product.controller.js
 const Product = require("../models/Product");
 const User = require("../models/User");
-const { uploadToR2, deleteFromR2 } = require("../config/r2");
+const { uploadToR2, uploadPrivateBookFile, deleteFromR2 } = require("../config/r2");
 const {
   createNotification,
   notifyAdmins,
@@ -169,6 +169,8 @@ async function createProduct(req, res) {
       status,
       salePrice, distributorPrice, distributorMinimumQuantity, currency, brand, vendor, gtin, nafdacNumber, googleProductCategory,
       condition, ingredients, directions, warnings, netContent, countryOfOrigin,
+      publisherId, platformCommissionRate,
+      editions,
       shippingWeight, shippingLength, shippingWidth, shippingHeight,
       shippingClass, shipsInternationally,
     } = req.body;
@@ -195,6 +197,10 @@ async function createProduct(req, res) {
       }
     }
 
+    const digitalFiles = {};
+    if (files.pdfFile?.[0]) digitalFiles.pdf = await uploadPrivateBookFile(files.pdfFile[0], "pdf");
+    if (files.epubFile?.[0]) digitalFiles.epub = await uploadPrivateBookFile(files.epubFile[0], "epub");
+
     const generatedSku = generateSKU(name, category);
 
     const isSubadmin = req.user?.role === "subadmin";
@@ -217,6 +223,8 @@ async function createProduct(req, res) {
 
       gallery,
 
+      digitalFiles,
+
       price: Number(price || 0),
 
       stock: Number(stock || 0),
@@ -235,6 +243,9 @@ async function createProduct(req, res) {
       currency: "NGN",
       brand: brand || "",
       vendor: vendor || "",
+      publisherId: publisherId || null,
+      platformCommissionRate: Math.min(100, Math.max(0, Number(platformCommissionRate ?? 10))),
+      editions: editions ? JSON.parse(editions) : [],
       gtin: gtin || "",
       nafdacNumber: nafdacNumber || "",
       googleProductCategory: googleProductCategory || "",
@@ -355,6 +366,8 @@ async function updateProduct(req, res) {
       sku,
       salePrice, distributorPrice, distributorMinimumQuantity, currency, brand, vendor, gtin, nafdacNumber, googleProductCategory,
       condition, ingredients, directions, warnings, netContent, countryOfOrigin,
+      publisherId, platformCommissionRate,
+      editions,
       shippingWeight, shippingLength, shippingWidth, shippingHeight,
       shippingClass, shipsInternationally,
     } = req.body;
@@ -396,6 +409,9 @@ async function updateProduct(req, res) {
     product.currency = "NGN";
     if (brand !== undefined) product.brand = brand;
     if (vendor !== undefined) product.vendor = vendor;
+    if (publisherId !== undefined) product.publisherId = publisherId || null;
+    if (platformCommissionRate !== undefined) product.platformCommissionRate = Math.min(100, Math.max(0, Number(platformCommissionRate || 0)));
+    if (editions !== undefined) product.editions = JSON.parse(editions);
     if (gtin !== undefined) product.gtin = gtin;
     if (nafdacNumber !== undefined) product.nafdacNumber = nafdacNumber;
     if (googleProductCategory !== undefined) product.googleProductCategory = googleProductCategory;
@@ -429,6 +445,14 @@ async function updateProduct(req, res) {
 
       product.gallery = gallery;
     }
+
+    if (files.pdfFile?.[0] || files.epubFile?.[0]) {
+      product.digitalFiles = product.digitalFiles || {};
+      product.digitalFiles.pdf = product.digitalFiles.pdf || {};
+      product.digitalFiles.epub = product.digitalFiles.epub || {};
+    }
+    if (files.pdfFile?.[0]) product.digitalFiles.pdf = await uploadPrivateBookFile(files.pdfFile[0], "pdf");
+    if (files.epubFile?.[0]) product.digitalFiles.epub = await uploadPrivateBookFile(files.epubFile[0], "epub");
 
     await product.save();
 

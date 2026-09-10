@@ -23,7 +23,7 @@ router.get("/", protect, async (req, res) => {
 });
 
 router.post("/add", protect, async (req, res) => {
-  const { productId, quantity = 1 } = req.body;
+  const { productId, quantity = 1, editionKey = "paperback" } = req.body;
   const quantityToAdd = Number(quantity);
 
   if (!Number.isSafeInteger(quantityToAdd) || quantityToAdd < 1) {
@@ -43,9 +43,7 @@ router.post("/add", protect, async (req, res) => {
     });
   }
 
-  const existingItem = cart.items.find(
-    (item) => item.productId.toString() === productId,
-  );
+  const existingItem = cart.items.find((item) => item.productId.toString() === productId && item.editionKey === editionKey);
 
   if (existingItem) {
     existingItem.quantity += quantityToAdd;
@@ -53,6 +51,7 @@ router.post("/add", protect, async (req, res) => {
     cart.items.push({
       productId,
       quantity: quantityToAdd,
+      editionKey: String(editionKey || "paperback"),
     });
   }
 
@@ -72,9 +71,8 @@ router.delete("/remove/:productId", protect, async (req, res) => {
     });
   }
 
-  cart.items = cart.items.filter(
-    (item) => item.productId.toString() !== req.params.productId,
-  );
+  const editionKey = String(req.query.editionKey || "paperback");
+  cart.items = cart.items.filter((item) => !(item.productId.toString() === req.params.productId && item.editionKey === editionKey));
 
   await cart.save();
 
@@ -100,9 +98,8 @@ router.put("/update/:productId", protect, async (req, res) => {
     });
   }
 
-  const item = cart.items.find(
-    (i) => i.productId.toString() === req.params.productId,
-  );
+  const editionKey = String(req.query.editionKey || "paperback");
+  const item = cart.items.find((i) => i.productId.toString() === req.params.productId && i.editionKey === editionKey);
 
   if (!item) {
     return res.status(404).json({

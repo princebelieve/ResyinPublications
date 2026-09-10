@@ -1,6 +1,19 @@
 //server/src/models/Product.js
 const mongoose = require("mongoose");
 
+const editionSchema = new mongoose.Schema({
+  format: { type: String, enum: ["paperback", "hardcover", "pdf", "epub"], required: true },
+  label: { type: String, default: "" },
+  price: { type: Number, default: 0, min: 0 },
+  salePrice: { type: Number, default: null, min: 0 },
+  stock: { type: Number, default: 0, min: 0 },
+  isbn: { type: String, default: "", trim: true },
+  sku: { type: String, default: "", trim: true },
+  shippingWeight: { type: Number, default: 0, min: 0 },
+  digitalFileKey: { type: String, default: "" },
+  digitalFileName: { type: String, default: "" },
+}, { _id: false });
+
 const productSchema = new mongoose.Schema(
   {
     // COLLECTION NAME
@@ -50,6 +63,23 @@ const productSchema = new mongoose.Schema(
       default: [],
     },
 
+    editions: { type: [editionSchema], default: [] },
+
+    digitalFiles: {
+      pdf: {
+        key: { type: String, default: "" },
+        fileName: { type: String, default: "" },
+        size: { type: Number, default: 0 },
+        contentType: { type: String, default: "application/pdf" },
+      },
+      epub: {
+        key: { type: String, default: "" },
+        fileName: { type: String, default: "" },
+        size: { type: Number, default: 0 },
+        contentType: { type: String, default: "application/epub+zip" },
+      },
+    },
+
     // COLLECTION PRICE
     price: {
       type: Number,
@@ -88,6 +118,13 @@ const productSchema = new mongoose.Schema(
     },
     brand: { type: String, default: "" },
     vendor: { type: String, default: "" },
+    publisherId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+      index: true,
+    },
+    platformCommissionRate: { type: Number, default: 10, min: 0, max: 100 },
     gtin: { type: String, default: "", trim: true },
     nafdacNumber: { type: String, default: "", trim: true },
     googleProductCategory: { type: String, default: "", trim: true },

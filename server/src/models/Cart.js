@@ -11,6 +11,8 @@ const cartItemSchema = new mongoose.Schema({
     type: Number,
     default: 1,
   },
+
+  editionKey: { type: String, default: "paperback" },
 });
 
 const cartSchema = new mongoose.Schema(

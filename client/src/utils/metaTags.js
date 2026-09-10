@@ -5,7 +5,7 @@
 export function setMetaTags(config) {
   const {
     title = "RESYIN PUBLICATIONS",
-    description = "RESYIN PUBLICATIONS is a digital bookstore for meaningful books, ideas, and publishing by Prof. Johnson A. Egonmwan.",
+    description = "RESYIN PUBLICATIONS is a multi-author bookstore and publishing platform for academic, professional, literary, and general-interest books.",
     image = "",
     url = window.location.href,
     type = "website",
@@ -13,7 +13,7 @@ export function setMetaTags(config) {
 
   const absoluteImage = image
     ? new URL(image, window.location.origin).toString()
-    : `${window.location.origin}/resyin-mark.svg`;
+    : `${window.location.origin}/icon-512.png`;
 
   // Set document title
   document.title = title;

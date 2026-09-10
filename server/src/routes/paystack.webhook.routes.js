@@ -114,7 +114,12 @@ router.post("/", async (req, res) => {
 
         if (!product) continue;
 
-        product.stock = Math.max(0, product.stock - item.quantity);
+        const edition = product.editions?.find((candidate) => candidate.format === (item.format || item.editionKey));
+        if (edition) {
+          edition.stock = Math.max(0, Number(edition.stock || 0) - item.quantity);
+        } else {
+          product.stock = Math.max(0, product.stock - item.quantity);
+        }
 
         product.soldCount = (product.soldCount || 0) + item.quantity;
 

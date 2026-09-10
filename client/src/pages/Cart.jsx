@@ -88,7 +88,7 @@ export default function Cart() {
           <>
             <div className="cart-list">
               {cart.map((item) => (
-                <div className="cart-item" key={item.productId}>
+                <div className="cart-item" key={`${item.productId}-${item.editionKey}`}>
                   <img
                     src={item.image}
                     alt={item.name}
@@ -98,13 +98,15 @@ export default function Cart() {
                   <div className="cart-item-content">
                     <h3>{item.name}</h3>
 
+                    <small>{item.format || item.editionKey || "Paperback"}</small>
+
                     <p>₦{Number(item.price).toLocaleString()}</p>
 
                     <div className="cart-actions">
                       <button
                         type="button"
                         onClick={() =>
-                          updateQuantity(item.productId, item.quantity - 1)
+                          updateQuantity(item.productId, item.quantity - 1, item.editionKey)
                         }
                       >
                         -
@@ -119,7 +121,7 @@ export default function Cart() {
                         onChange={(event) => {
                           const value = Number(event.target.value);
                           if (Number.isInteger(value) && value > 0) {
-                            updateQuantity(item.productId, value);
+                            updateQuantity(item.productId, value, item.editionKey);
                           }
                         }}
                       />
@@ -127,7 +129,7 @@ export default function Cart() {
                       <button
                         type="button"
                         onClick={() =>
-                          updateQuantity(item.productId, item.quantity + 1)
+                          updateQuantity(item.productId, item.quantity + 1, item.editionKey)
                         }
                       >
                         +
@@ -137,7 +139,7 @@ export default function Cart() {
                     <button
                       type="button"
                       className="btn-danger"
-                      onClick={() => removeFromCart(item.productId)}
+                      onClick={() => removeFromCart(item.productId, item.editionKey)}
                     >
                       Remove
                     </button>

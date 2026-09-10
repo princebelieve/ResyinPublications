@@ -75,19 +75,46 @@ router.post("/", protect, async (req, res) => {
       });
     }
 
+    let platformCommissionTotal = 0;
+    let publisherEarningsTotal = 0;
+
     const orderItems = validCartItems.map((item) => {
       const product = item.productId;
+      const edition = product.editions?.find((candidate) => candidate.format === item.editionKey) || {
+        format: "paperback", price: Number(product.price || 0), stock: Number(product.stock || 0), isbn: "",
+      };
+      if (Number(edition.stock || 0) < item.quantity) {
+        throw new Error(`${product.name} (${edition.format}) does not have enough stock.`);
+      }
 
-      const itemTotal = Number(product.price || 0) * item.quantity;
+      const itemTotal = Number(edition.salePrice != null && edition.salePrice < edition.price ? edition.salePrice : edition.price) * item.quantity;
+      const commissionRate = Math.min(100, Math.max(0, Number(product.platformCommissionRate ?? 10)));
+      const platformCommissionAmount = product.publisherId
+        ? Number((itemTotal * commissionRate / 100).toFixed(2))
+        : itemTotal;
+      const publisherEarnings = product.publisherId
+        ? Number((itemTotal - platformCommissionAmount).toFixed(2))
+        : 0;
 
       subtotal += itemTotal;
+      platformCommissionTotal += platformCommissionAmount;
+      publisherEarningsTotal += publisherEarnings;
 
       return {
         productId: product._id.toString(),
         name: product.name,
         image: product.coverImage,
-        price: Number(product.price || 0),
+        price: Number(edition.salePrice != null && edition.salePrice < edition.price ? edition.salePrice : edition.price),
         quantity: item.quantity,
+        editionKey: item.editionKey || edition.format || "paperback",
+        format: edition.format || "paperback",
+        isbn: edition.isbn || "",
+        publisherId: product.publisherId ? String(product.publisherId) : "",
+        grossAmount: itemTotal,
+        platformCommissionRate: commissionRate,
+        platformCommissionAmount,
+        publisherEarnings,
+        publisherPayoutStatus: product.publisherId ? "pending" : "not_applicable",
       };
     });
 
@@ -153,6 +180,8 @@ router.post("/", protect, async (req, res) => {
       shippingService: shippingData.serviceName || "",
       deliveryContact: phone,
       totalAmount,
+      platformCommissionTotal,
+      publisherEarningsTotal,
       currency: "NGN",
       paymentMethod,
       cashCollectionStatus: paymentMethod === "cash_on_delivery" ? "pending_collection" : "not_applicable",

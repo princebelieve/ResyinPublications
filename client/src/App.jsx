@@ -36,6 +36,7 @@ import AdminOrderDetails from "./pages/AdminOrderDetails";
 import AdminDeliveryBoard from "./pages/AdminDeliveryBoard";
 import AdminShipping from "./pages/AdminShipping";
 import AdminPaymentSettings from "./pages/AdminPaymentSettings";
+import AdminPublisherSubscriptionSettings from "./pages/AdminPublisherSubscriptionSettings";
 import AdminTransportCompanies from "./pages/AdminTransportCompanies";
 import AdminInquiries from "./pages/AdminInquiries";
 import AdminUsers from "./pages/AdminUsers";
@@ -305,6 +306,7 @@ export default function App() {
               }
             />
             <Route path="/admin/payment-settings" element={<RequireAdmin><AdminLayout><AdminPaymentSettings /></AdminLayout></RequireAdmin>} />
+            <Route path="/admin/publisher-subscription-settings" element={<RequireAdmin><AdminLayout><AdminPublisherSubscriptionSettings /></AdminLayout></RequireAdmin>} />
             <Route path="/admin/transport-companies" element={<RequireAdmin><AdminLayout><AdminTransportCompanies /></AdminLayout></RequireAdmin>} />
             <Route
               path="/admin/inquiries"

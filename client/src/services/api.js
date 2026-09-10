@@ -347,6 +347,18 @@ export async function updateStorePaymentSettings(data, token) {
   return apiRequest("/api/payment-settings/admin", { method: "PUT", headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify(data) });
 }
 
+export async function getPublisherSubscriptionSettings(token) {
+  return apiRequest("/api/publisher-subscription-settings/admin", { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export async function updatePublisherSubscriptionSettings(data, token) {
+  return apiRequest("/api/publisher-subscription-settings/admin", { method: "PUT", headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify(data) });
+}
+
+export async function getPublicPublisherSubscriptionSettings() {
+  return apiRequest("/api/publisher-subscription-settings/public");
+}
+
 export async function getNigerianBanks() {
   return apiRequest("/api/payment-settings/banks");
 }
@@ -521,6 +533,10 @@ export async function deleteTestimonialApi(id, token) {
 
 export async function getProductById(id) {
   return apiRequest(`/api/products/${id}`);
+}
+
+export async function getDigitalBookDownloadUrl(id, format) {
+  return apiRequest(`/api/products/${id}/download/${format}`);
 }
 
 export async function getAdminProductById(id, token) {
@@ -802,7 +818,7 @@ export async function getCart(token) {
   });
 }
 
-export async function addToCartApi(token, productId, quantity = 1) {
+export async function addToCartApi(token, productId, quantity = 1, editionKey = "paperback") {
   return apiRequest("/api/cart/add", {
     method: "POST",
 
@@ -814,12 +830,13 @@ export async function addToCartApi(token, productId, quantity = 1) {
     body: JSON.stringify({
       productId,
       quantity,
+      editionKey,
     }),
   });
 }
 
-export async function removeFromCartApi(token, productId) {
-  return apiRequest(`/api/cart/remove/${productId}`, {
+export async function removeFromCartApi(token, productId, editionKey = "paperback") {
+  return apiRequest(`/api/cart/remove/${productId}?editionKey=${encodeURIComponent(editionKey)}`, {
     method: "DELETE",
 
     headers: {
@@ -828,8 +845,8 @@ export async function removeFromCartApi(token, productId) {
   });
 }
 
-export async function updateCartApi(token, productId, quantity) {
-  return apiRequest(`/api/cart/update/${productId}`, {
+export async function updateCartApi(token, productId, quantity, editionKey = "paperback") {
+  return apiRequest(`/api/cart/update/${productId}?editionKey=${encodeURIComponent(editionKey)}`, {
     method: "PUT",
 
     headers: {

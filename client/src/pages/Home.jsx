@@ -4,6 +4,7 @@ import { ArrowRight, BookOpen, Library, Users, GraduationCap } from "lucide-reac
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import ProductGrid from "../components/ProductGrid";
+import ResyinAdvertCarousel from "../components/ResyinAdvertCarousel";
 import { getProducts } from "../services/api";
 
 export default function Home() {
@@ -26,6 +27,7 @@ export default function Home() {
       <div className="store-hero-art"><div className="store-orbit" /><img src="/let's learn about nigeria.png" alt="Let's Learn About Nigeria book cover" /><span className="store-art-caption">A new chapter starts here.</span></div>
     </section>
     <div className="store-benefits"><span><BookOpen size={20} /> A home for thoughtful reading</span><span><GraduationCap size={20} /> For study, work &amp; discovery</span><span><Users size={20} /> Established &amp; emerging voices</span></div>
+    <ResyinAdvertCarousel />
     <section className="store-shelf"><div className="store-section-heading"><div><span className="store-eyebrow">YOUR NEXT GOOD READ</span><h2>Discover the collection</h2></div><Link to="/collection">See all books <ArrowRight size={16} /></Link></div>
       {status === "loading" ? <p role="status" className="store-empty">Loading the bookshelf?</p> : status === "error" ? <div className="store-empty" role="alert">We couldn?t load the books. <button onClick={() => window.location.reload()}>Try again</button></div> : featured.length ? <ProductGrid products={featured} /> : <div className="store-empty"><Library size={32} /><h3>Our next chapter is on its way</h3><p>New titles will appear here as they join the catalog.</p><Link to="/contact">Ask about a book</Link></div>}
     </section>

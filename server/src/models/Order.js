@@ -27,6 +27,21 @@ const orderItemSchema = new mongoose.Schema(
       type: Number,
       default: 1,
     },
+
+    editionKey: { type: String, default: "paperback" },
+    format: { type: String, default: "paperback" },
+    isbn: { type: String, default: "" },
+
+    publisherId: { type: String, default: "" },
+    grossAmount: { type: Number, default: 0 },
+    platformCommissionRate: { type: Number, default: 10 },
+    platformCommissionAmount: { type: Number, default: 0 },
+    publisherEarnings: { type: Number, default: 0 },
+    publisherPayoutStatus: {
+      type: String,
+      enum: ["not_applicable", "pending", "paid", "held"],
+      default: "not_applicable",
+    },
   },
   { _id: false },
 );
@@ -92,6 +107,9 @@ const orderSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+
+    platformCommissionTotal: { type: Number, default: 0 },
+    publisherEarningsTotal: { type: Number, default: 0 },
 
     currency: {
       type: String,

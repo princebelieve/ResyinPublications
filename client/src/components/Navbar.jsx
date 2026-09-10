@@ -1,7 +1,7 @@
 //client/src/components/Navbar.jsx
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, Search, BookOpen, ShoppingCart } from "lucide-react";
+import { Menu, X, Search, ShoppingCart } from "lucide-react";
 import { Download } from "lucide-react";
 import useAuth from "../context/AuthContext";
 import useClickOutside from "../hooks/useClickOutside";
@@ -87,8 +87,8 @@ export default function Navbar() {
     <>
     <nav className="navbar bookstore-navbar">
       <Link to="/" className="navbar-brand" onClick={() => setOpen(false)}>
-        <BookOpen size={32} className="store-brand-icon" />
-        <span className="brand-name">resyin<span>PUBLICATIONS ? BOOKSTORE</span></span>
+        <img src="/logo.png" alt="RESYIN Publications" className="store-brand-mark" />
+        <span className="brand-name">RESYIN <span>PUBLICATIONS</span></span>
       </Link>
       <form className="store-search" role="search" onSubmit={(event) => { event.preventDefault(); navigate(`/collection?q=${encodeURIComponent(query.trim())}`); setOpen(false); }}>
         <label htmlFor="store-query">Books</label>

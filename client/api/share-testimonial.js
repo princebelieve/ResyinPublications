@@ -24,7 +24,7 @@ function youtubeThumbnail(url = "") {
 export default async function handler(req, res) {
   const id = req.query?.id;
   const backendUrl = process.env.BACKEND_URL || process.env.API_URL || process.env.VITE_API_URL || process.env.BASE_URL;
-  const fallbackImage = "https://resyinpublications.com/resyin-mark.svg";
+  const fallbackImage = "https://resyinpublications.com/icon-512.png";
   const pageUrl = `https://resyinpublications.com/testimonials${id ? `?post=${encodeURIComponent(id)}` : ""}`;
 
   if (!id || !backendUrl) {

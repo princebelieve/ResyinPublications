@@ -1,25 +1,98 @@
 import { useState } from "react";
-import { Mail, Phone, MessageCircle } from "lucide-react";
+import { ArrowRight, BookOpen, Building2, Mail, MessageCircle, Package, Send } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { submitInquiry } from "../services/api";
 import useScrollReveal from "../hooks/useScrollReveal";
 
+const contactTopics = [
+  { icon: Package, title: "Book orders", text: "Ask about an order, availability, delivery, payment, or a damaged book." },
+  { icon: Building2, title: "Schools and institutions", text: "Discuss library supply, classroom sets, bulk orders, and reading programmes." },
+  { icon: BookOpen, title: "Authors and publishers", text: "Talk to the RESYIN team about listing a title or publishing partnership." },
+];
+
 export default function Contact() {
   useScrollReveal();
   const [form, setForm] = useState({ fullName: "", email: "", phone: "", projectType: "", message: "" });
   const [message, setMessage] = useState("");
+
   const change = (event) => setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
+
   async function submit(event) {
     event.preventDefault();
+    setMessage("");
     try {
       await submitInquiry(form);
-      setMessage("Thank you. RESYIN will get in touch shortly.");
+      setMessage("Your enquiry has been sent. The RESYIN team will respond shortly.");
       setForm({ fullName: "", email: "", phone: "", projectType: "", message: "" });
     } catch (error) {
-      setMessage(error.message || "Your enquiry could not be sent.");
+      setMessage(error.message || "Your enquiry could not be sent. Please try again.");
     }
   }
 
-  return <><Navbar /><main className="contact-page"><section className="contact-hero reveal"><div className="container contact-hero-card"><div className="contact-copy"><span className="eyebrow">CONTACT RESYIN PUBLICATIONS</span><h1>Let’s take the next step together.</h1><p>Ask about book orders, Prof. Johnson A. Egonmwan’s titles, publishing your work, or school and library purchases.</p><div className="contact-strip"><a href="https://wa.me/2349041441646" target="_blank" rel="noreferrer" className="strip-card whatsapp-card"><MessageCircle size={28} /><div><strong>Chat on WhatsApp</strong><span>+2349041441646</span></div></a><a href="tel:+2349041441646" className="strip-card email-card"><Phone size={28} /><div><strong>Call RESYIN</strong><span>+2349041441646</span></div></a></div></div></div></section><section className="section reveal"><div className="container about-story"><div className="story-card reveal"><h2 className="title">Send an enquiry</h2><form className="form" onSubmit={submit}><input required name="fullName" placeholder="Full name" value={form.fullName} onChange={change} /><input required type="email" name="email" placeholder="Email address" value={form.email} onChange={change} /><input required name="phone" placeholder="Phone / WhatsApp number" value={form.phone} onChange={change} /><select required name="projectType" value={form.projectType} onChange={change}><option value="">What can we help with?</option><option>Books</option><option>Publish my book</option><option>School or library order</option><option>Community outreach</option><option>Partnership opportunity</option><option>General enquiry</option></select><textarea required name="message" rows="5" placeholder="Tell us how we can help." value={form.message} onChange={change} /><button className="primary">Send enquiry</button>{message && <p>{message}</p>}</form></div><div className="story-card reveal"><Mail size={30} /><h2 className="title">Contact the bookstore</h2><p><a href="https://resyinpublications.com">resyinpublications.com</a></p><p><a href="mailto:info@resyinpublications.com">info@resyinpublications.com</a></p>{["2349041441646", "2348034621513"].map((number) => <div key={number} className="contact-address"><strong>+{number}</strong><p><a href={`tel:+${number}`}>Call</a> &middot; <a href={`https://wa.me/${number}`} target="_blank" rel="noreferrer">WhatsApp</a></p></div>)}<p>For collection or delivery arrangements, please contact us before visiting.</p></div></div></section></main><Footer /></>;
+  return (
+    <>
+      <Navbar />
+      <main className="resyin-contact-page">
+        <header className="resyin-contact-header">
+          <div className="container resyin-contact-header-inner">
+            <div>
+              <p className="resyin-contact-kicker">RESYIN PUBLICATIONS / CONTACT</p>
+              <h1>How can we help?</h1>
+              <p className="resyin-contact-lede">Get help with a book order, ask about institutional purchasing, or start a conversation about bringing a new title to the RESYIN catalog.</p>
+            </div>
+            <div className="resyin-contact-reference" aria-label="RESYIN contact reference">
+              <span>Customer support</span>
+              <strong>RESYIN-01</strong>
+              <small>Keep your order number nearby for faster help.</small>
+            </div>
+          </div>
+        </header>
+
+        <section className="resyin-contact-content section">
+          <div className="container">
+            <div className="resyin-contact-topics">
+              {contactTopics.map(({ icon: Icon, title, text }) => (
+                <article className="resyin-contact-topic" key={title}>
+                  <Icon size={21} aria-hidden="true" />
+                  <h2>{title}</h2>
+                  <p>{text}</p>
+                  <ArrowRight size={17} aria-hidden="true" />
+                </article>
+              ))}
+            </div>
+
+            <div className="resyin-contact-grid">
+              <section className="resyin-contact-form-panel">
+                <p className="resyin-contact-kicker">SEND A MESSAGE</p>
+                <h2>Tell us what you need.</h2>
+                <form className="resyin-contact-form" onSubmit={submit}>
+                  <label>Name<input required name="fullName" value={form.fullName} onChange={change} autoComplete="name" /></label>
+                  <label>Email address<input required type="email" name="email" value={form.email} onChange={change} autoComplete="email" /></label>
+                  <label>Phone or WhatsApp<input required name="phone" value={form.phone} onChange={change} autoComplete="tel" /></label>
+                  <label>Topic<select required name="projectType" value={form.projectType} onChange={change}><option value="">Choose a topic</option><option>Book order or delivery</option><option>School or library order</option><option>Author or publisher enquiry</option><option>Digital book support</option><option>General enquiry</option></select></label>
+                  <label className="resyin-contact-form-wide">Message<textarea required name="message" rows="6" value={form.message} onChange={change} placeholder="Include an order number, book title, or a short description of your enquiry." /></label>
+                  <button className="resyin-contact-submit" type="submit"><Send size={17} /> Send enquiry</button>
+                  {message && <p className="resyin-contact-status" role="status">{message}</p>}
+                </form>
+              </section>
+
+              <aside className="resyin-contact-aside">
+                <div>
+                  <p className="resyin-contact-kicker">DIRECT CHANNELS</p>
+                  <h2>Reach the bookstore.</h2>
+                  <a href="mailto:info@resyinpublications.com"><Mail size={18} /> info@resyinpublications.com</a>
+                  <a href="https://wa.me/2349041441646" target="_blank" rel="noreferrer"><MessageCircle size={18} /> WhatsApp support</a>
+                  <a href="tel:+2349041441646"><Package size={18} /> +234 904 144 1646</a>
+                </div>
+                <div className="resyin-contact-note"><strong>For authors</strong><p>Include your name, title, format, ISBN if available, and a short note about the audience for your book.</p></div>
+                <div className="resyin-contact-note"><strong>For institutions</strong><p>Tell us the titles, quantities, delivery location, and preferred timeline for your order.</p></div>
+              </aside>
+            </div>
+          </div>
+        </section>
+      </main>
+      <Footer />
+    </>
+  );
 }

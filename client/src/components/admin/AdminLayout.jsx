@@ -120,6 +120,12 @@ export default function AdminLayout({ children }) {
     },
 
     {
+      to: "/admin/publisher-subscription-settings",
+      label: "Publisher Subscription",
+      icon: <WalletCards size={18} />,
+    },
+
+    {
       to: "/admin/inquiries",
       label: "Inquiries",
       icon: <MessageSquare size={18} />,
@@ -186,7 +192,7 @@ export default function AdminLayout({ children }) {
           </button>
 
           <Link to="/admin" className="admin-brand">
-            <img src="/resyin-mark.svg" alt="logo" className="admin-logo" />
+            <img src="/logo.png" alt="RESYIN Publications" className="admin-logo" />
 
             <div>
               <strong>RESYIN</strong>

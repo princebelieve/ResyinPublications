@@ -63,27 +63,27 @@ export default function PwaNotificationBanner() {
   }
 
   return (
-    <div className="pwa-notification-banner">
-      <div className="pwa-banner-content">
-        <Bell size={20} className="pwa-banner-icon" />
+    <div className="resyin-notification-card">
+      <div className="resyin-notification-content">
+        <Bell size={20} className="resyin-notification-icon" />
         <div>
-          <strong>Enable notifications</strong>
-          <p>Stay updated on your orders and special offers</p>
+          <strong>Stay close to your reading life</strong>
+          <p>Receive order and catalog updates when you choose.</p>
         </div>
       </div>
 
-      <div className="pwa-banner-actions">
+      <div className="resyin-notification-actions">
         <button
           type="button"
-          className="pwa-btn-enable"
+          className="resyin-notification-accept"
           onClick={handleSubscribe}
           disabled={subscribing}
         >
-          {subscribing ? "..." : "Enable"}
+          {subscribing ? "..." : "Allow updates"}
         </button>
         <button
           type="button"
-          className="pwa-btn-dismiss"
+          className="resyin-notification-dismiss"
           onClick={handleDismiss}
           aria-label="Dismiss"
         >

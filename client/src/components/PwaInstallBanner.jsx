@@ -81,14 +81,14 @@ export default function PwaInstallBanner() {
   }
 
   return (
-    <aside className={`pwa-install-pill${leaving ? " leaving" : ""}`} aria-label="Install the RESYIN app">
-      <Download size={17} aria-hidden="true" />
-      <div className="pwa-install-pill-copy">
-        <strong>RESYIN App</strong>
+    <aside className={`resyin-install-card${leaving ? " leaving" : ""}`} aria-label="Install RESYIN Publications">
+      <div className="resyin-install-mark"><Download size={18} aria-hidden="true" /></div>
+      <div className="resyin-install-copy">
+        <strong>Take RESYIN with you</strong>
         <span key={benefitIndex}>{benefits[benefitIndex]}</span>
       </div>
-      <button type="button" onClick={handleInstall}>Install</button>
-      <button type="button" className="pwa-install-pill-dismiss" onClick={dismiss} aria-label="Dismiss install suggestion"><X size={16} /></button>
+      <button type="button" className="resyin-install-action" onClick={handleInstall}>Install</button>
+      <button type="button" className="resyin-install-close" onClick={dismiss} aria-label="Dismiss install suggestion"><X size={16} /></button>
     </aside>
   );
 }

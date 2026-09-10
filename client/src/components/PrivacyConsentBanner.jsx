@@ -20,24 +20,16 @@ export default function PrivacyConsentBanner() {
   if (!visible) return null;
 
   return (
-    <aside className="privacy-consent-banner" role="dialog" aria-label="Privacy notice">
-      <div className="privacy-consent-content">
-        <strong>RESYIN Publications: books, ideas, and discovery.</strong>
+    <aside className="resyin-privacy-note" role="dialog" aria-label="Privacy notice">
+      <div className="resyin-privacy-copy">
+        <strong>A note about privacy</strong>
         <p>
-          Browse books, discover authors, manage your orders,
-          request support, and manage orders. RESYIN uses Google Sign-In to
-          create and manage your account, and Gmail API only to send
-          account-verification, password-reset, and important service emails from
-          our official support account. We do not read, store, or modify the
-          contents of your Gmail inbox. Read our <Link to="/privacy-policy">Privacy Policy</Link>.
+          We use essential account and order data to run the bookstore. <Link to="/privacy-policy">Read the policy</Link>.
         </p>
       </div>
-      <div className="privacy-consent-actions">
-        <Link className="privacy-consent-policy" to="/privacy-policy">
-          Read Privacy Policy
-        </Link>
-        <button type="button" className="privacy-consent-accept" onClick={acceptPrivacy}>
-          Accept and continue
+      <div className="resyin-privacy-actions">
+        <button type="button" className="resyin-privacy-accept" onClick={acceptPrivacy}>
+          Got it
         </button>
       </div>
     </aside>
