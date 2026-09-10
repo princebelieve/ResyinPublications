@@ -116,6 +116,41 @@ button,input,select,textarea { font-family:inherit; }
 .bookstore-navbar .store-account .nav-links { position:absolute; right:0; top:100%; display:flex; flex-direction:column; align-items:stretch; gap:0; width:230px; padding:10px; background:white; border:1px solid #d5d9dc; border-radius:4px; box-shadow:0 8px 25px #0003; }
 .bookstore-navbar .store-account:not([open]) .nav-links { display:none; }
 
+/* User dashboard surface: replace the legacy brown wellness palette. */
+.admin-shell .dashboard-hero {
+	background: #24495d;
+	border-radius: 0;
+	border-left: 5px solid #d17a3f;
+	box-shadow: 0 10px 24px rgba(20, 39, 49, .14);
+}
+
+.admin-shell .dashboard-actions button {
+	border: 1px solid #2d5368;
+	border-radius: 0;
+	background: #2d5368;
+	color: #fffaf3;
+	box-shadow: none;
+}
+
+.admin-shell .dashboard-actions button:hover {
+	background: #d17a3f;
+	border-color: #d17a3f;
+	color: #211914;
+}
+
+.admin-shell .user-topbar-links a {
+	position: relative;
+	z-index: 2;
+	border-radius: 0;
+	background: #d17a3f;
+	color: #211914 !important;
+}
+
+.admin-shell .user-topbar-links a:hover {
+	background: #b85c35;
+	color: #fffaf3 !important;
+}
+
 /* RESYIN admin workspace: clean catalog control room, not the legacy wellness dashboard. */
 .admin-shell {
 	background: #f7f3ed;

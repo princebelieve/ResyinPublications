@@ -220,10 +220,7 @@ export default function AdminLayout({ children }) {
 
       {/* MOBILE OVERLAY */}
       {sidebarOpen && window.innerWidth < 1024 && (
-        <div
-          className="admin-sidebar-overlay"
-          onClick={() => setSidebarOpen(false)}
-        />
+        <div className="admin-sidebar-overlay" onPointerDown={() => setSidebarOpen(false)} />
       )}
 
       {/* SIDEBAR */}
@@ -274,7 +271,7 @@ export default function AdminLayout({ children }) {
       </aside>
 
       {/* CONTENT */}
-      <main className="admin-main">{children}</main>
+      <main className="admin-main" onPointerDown={() => sidebarOpen && setSidebarOpen(false)}>{children}</main>
     </div>
   );
 }

@@ -155,7 +155,7 @@ export default function UserLayout({ children }) {
       </aside>
 
       {/* CONTENT */}
-      <main className="admin-main">{children}</main>
+      <main className="admin-main" onPointerDown={() => open && setOpen(false)}>{children}</main>
     </div>
   );
 }

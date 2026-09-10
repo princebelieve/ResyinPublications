@@ -22,6 +22,7 @@ export default function Navbar() {
 
   const menuRef = useRef(null);
   const buttonRef = useRef(null);
+  const accountMenuRef = useRef(null);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isInstalled, setIsInstalled] = useState(false);
   const [isMobileScreen, setIsMobileScreen] = useState(false);
@@ -70,6 +71,23 @@ export default function Navbar() {
   useClickOutside([menuRef, buttonRef], () => setOpen(false), open);
 
   useEffect(() => {
+    function closeDesktopAccountMenu(event) {
+      const menu = accountMenuRef.current;
+      if (!menu?.hasAttribute("open")) return;
+      if (event.type === "keydown" && event.key !== "Escape") return;
+      if (event.type !== "keydown" && menu.contains(event.target)) return;
+      menu.removeAttribute("open");
+    }
+
+    document.addEventListener("pointerdown", closeDesktopAccountMenu, true);
+    document.addEventListener("keydown", closeDesktopAccountMenu);
+    return () => {
+      document.removeEventListener("pointerdown", closeDesktopAccountMenu, true);
+      document.removeEventListener("keydown", closeDesktopAccountMenu);
+    };
+  }, []);
+
+  useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
 
     return () => {
@@ -96,7 +114,7 @@ export default function Navbar() {
         <button type="submit" aria-label="Search"><Search size={23} /></button>
       </form>
       <div className="desktop-nav">
-        <details className="store-account"><summary>{isLoggedIn ? "Your account" : "Hello, sign in"}</summary><div className="nav-links">
+        <details ref={accountMenuRef} className="store-account"><summary>{isLoggedIn ? "Your account" : "Hello, sign in"}</summary><div className="nav-links">
           <Link to="/">Home</Link>
           <Link to="/collection">Browse Books</Link>
           <Link to="/about">About</Link>
