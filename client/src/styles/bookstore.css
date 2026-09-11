@@ -787,15 +787,15 @@ button,input,select,textarea { font-family:inherit; }
 
 /* RESYIN catalog advert: an editorial strip, not a legacy promotional card. */
 .resyin-advert {
-	padding: 34px 0 18px;
+	padding: 18px 0 10px;
 	background: #f7f3ed;
 }
 
 .resyin-advert-frame {
 	position: relative;
 	display: grid;
-	grid-template-columns: 190px minmax(0, 1fr) auto;
-	min-height: 238px;
+	grid-template-columns: 160px minmax(0, 1fr) auto;
+	min-height: 210px;
 	overflow: hidden;
 	border-top: 1px solid #cfc1b3;
 	border-bottom: 1px solid #cfc1b3;
@@ -831,8 +831,8 @@ button,input,select,textarea { font-family:inherit; }
 
 .resyin-advert-copy {
 	align-self: center;
-	max-width: 620px;
-	padding: 30px 42px;
+	max-width: 560px;
+	padding: 20px 24px;
 }
 
 .resyin-advert-label {
@@ -840,22 +840,23 @@ button,input,select,textarea { font-family:inherit; }
 	align-items: center;
 	gap: 8px;
 	color: #a84420;
-	font-size: .7rem;
+	font-size: .68rem;
 	font-weight: 700;
-	letter-spacing: .14em;
+	letter-spacing: .12em;
 }
 
 .resyin-advert-copy h2 {
-	margin: 14px 0 10px;
+	margin: 12px 0 8px;
 	color: #211914;
-	font: 600 clamp(2rem, 3.2vw, 3.4rem)/1.02 "Playfair Display", Georgia, serif;
+	font: 600 clamp(1.4rem, 2vw, 2.2rem)/1.08 "Playfair Display", Georgia, serif;
 }
 
 .resyin-advert-copy p {
-	max-width: 520px;
-	margin: 0 0 18px;
+	max-width: 460px;
+	margin: 0 0 14px;
 	color: #675950;
-	line-height: 1.65;
+	font-size: .88rem;
+	line-height: 1.55;
 }
 
 .resyin-advert-link {
@@ -872,7 +873,7 @@ button,input,select,textarea { font-family:inherit; }
 	align-items: center;
 	gap: 10px;
 	align-self: end;
-	padding: 0 24px 24px 0;
+	padding: 0 16px 14px 0;
 }
 
 .resyin-advert-controls > button {
@@ -913,23 +914,23 @@ button,input,select,textarea { font-family:inherit; }
 @media (max-width: 760px) {
 	.resyin-advert-frame {
 		grid-template-columns: 112px minmax(0, 1fr);
-		min-height: 210px;
+		min-height: 180px;
 	}
 
 	.resyin-advert-image-wrap {
-		min-height: 210px;
+		min-height: 180px;
 	}
 
 	.resyin-advert-copy {
-		padding: 24px 20px;
+		padding: 18px 18px 52px;
 	}
 
 	.resyin-advert-copy h2 {
-		font-size: 1.85rem;
+		font-size: 1.4rem;
 	}
 
 	.resyin-advert-copy p {
-		font-size: .86rem;
+		font-size: .8rem;
 	}
 
 	.resyin-advert-controls {
@@ -946,12 +947,12 @@ button,input,select,textarea { font-family:inherit; }
 	}
 
 	.resyin-advert-image-wrap {
-		min-height: 150px;
-		max-height: 180px;
+		min-height: 140px;
+		max-height: 170px;
 	}
 
 	.resyin-advert-copy {
-		padding: 22px 18px 70px;
+		padding: 18px 16px 64px;
 	}
 }
 .bookstore-navbar .store-account .nav-links > a,.bookstore-navbar .store-account .nav-links > button { display:block; padding:9px 12px; font-size:13px; color:#18212b; text-align:left; background:white; border:0; }

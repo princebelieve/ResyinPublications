@@ -31,6 +31,8 @@ router.post("/", protect, async (req, res) => {
       paymentMethod = "paystack", deliveryMethod = "delivery",
     } = req.body;
 
+    const isDigitalFormat = (value) => ["pdf", "epub"].includes(String(value || "").toLowerCase());
+
     if (!["paystack", "cash_on_delivery", "manual_bank_transfer", "publisher_direct_transfer"].includes(paymentMethod)) {
       return res.status(400).json({ message: "Choose a valid payment method." });
     }
@@ -84,7 +86,9 @@ router.post("/", protect, async (req, res) => {
       const edition = product.editions?.find((candidate) => candidate.format === item.editionKey) || {
         format: "paperback", price: Number(product.price || 0), stock: Number(product.stock || 0), isbn: "",
       };
-      if (Number(edition.stock || 0) < item.quantity) {
+      const isDigitalItem = isDigitalFormat(item.editionKey || edition.format);
+
+      if (!isDigitalItem && Number(edition.stock || 0) < item.quantity) {
         throw new Error(`${product.name} (${edition.format}) does not have enough stock.`);
       }
 
@@ -116,7 +120,19 @@ router.post("/", protect, async (req, res) => {
       };
     });
 
-    const shippingData = deliveryMethod === "pickup" ? { shippingAvailable: true, shippingFee: 0, serviceName: "Pickup", estimatedDays: "Ready after confirmation" } : await calculateShipping({ country, state, items: cart.items });
+    const digitalOnlyOrder = validCartItems.every((item) => {
+      const product = item.productId;
+      const edition = product.editions?.find((candidate) => candidate.format === item.editionKey) || {
+        format: "paperback",
+      };
+      return isDigitalFormat(item.editionKey || edition.format);
+    });
+
+    const shippingData = digitalOnlyOrder
+      ? { shippingAvailable: true, shippingFee: 0, serviceName: "Digital download", estimatedDays: "Instant access after payment" }
+      : deliveryMethod === "pickup"
+        ? { shippingAvailable: true, shippingFee: 0, serviceName: "Pickup", estimatedDays: "Ready after confirmation" }
+        : await calculateShipping({ country, state, items: cart.items });
 
     if (shippingData.shippingAvailable === false) {
       return res.status(400).json({

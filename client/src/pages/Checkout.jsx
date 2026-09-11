@@ -7,6 +7,7 @@ const COUNTRY_NAMES = new Intl.DisplayNames(["en"], { type: "region" });
 
 export default function Checkout() {
   const { cart, subtotal, clearCart, removeFromCart } = useCart();
+  const isDigitalOnlyCart = cart.length > 0 && cart.every((item) => ["pdf", "epub"].includes(String(item.format || item.editionKey || "").toLowerCase()));
   const publisherIds = [...new Set(cart.map((item) => item.publisherId).filter(Boolean))];
   const hasPublisherBooks = publisherIds.length > 0;
   const canPayPublisherDirectly = publisherIds.length === 1 && cart.every((item) => item.publisherId);
@@ -39,8 +40,17 @@ export default function Checkout() {
   useEffect(() => {
     if (hasPublisherBooks && canPayPublisherDirectly) {
       setForm((current) => ({ ...current, paymentMethod: "publisher_direct_transfer" }));
+      return;
     }
-  }, [hasPublisherBooks, canPayPublisherDirectly]);
+
+    if (isDigitalOnlyCart) {
+      setForm((current) => ({
+        ...current,
+        paymentMethod: current.paymentMethod === "cash_on_delivery" ? "paystack" : current.paymentMethod,
+        deliveryMethod: "pickup",
+      }));
+    }
+  }, [hasPublisherBooks, canPayPublisherDirectly, isDigitalOnlyCart]);
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -85,6 +95,12 @@ export default function Checkout() {
   useEffect(() => {
     async function loadShipping() {
       try {
+        if (isDigitalOnlyCart) {
+          setShippingError("");
+          setShippingFee(0);
+          setShippingInfo({ serviceName: "Digital download", estimatedDays: "Instant access after payment" });
+          return;
+        }
         if (form.deliveryMethod === "pickup") {
           setShippingError("");
           setShippingFee(0);
@@ -118,7 +134,7 @@ export default function Checkout() {
     }
 
     loadShipping();
-  }, [form.country, form.state, form.deliveryMethod, cart]);
+  }, [form.country, form.state, form.deliveryMethod, cart, isDigitalOnlyCart]);
 
   async function handleCheckout(e) {
     e.preventDefault();
@@ -183,14 +199,21 @@ export default function Checkout() {
                 required
               />
 
-              <fieldset className="payment-methods checkout-fulfilment-methods">
-                <legend>How would you like to receive your order?</legend>
-                <p className="checkout-fulfilment-help">Delivery goes to a delivery partner or collection park in your selected state; customers collect from there. Office pickup is only for customers coming to RESYIN in Benin City.</p>
-                <label className="payment-method-option"><input type="radio" name="deliveryMethod" value="delivery" checked={form.deliveryMethod === "delivery"} onChange={handleChange} /><span><strong>Delivery</strong><small>RESYIN will arrange delivery.</small></span></label>
-                <label className="payment-method-option"><input type="radio" name="deliveryMethod" value="pickup" checked={form.deliveryMethod === "pickup"} onChange={handleChange} /><span><strong>Pick up — no shipping fee</strong><small>Pick up from RESYIN Publications after confirmation.</small></span></label>
-              </fieldset>
+              {!isDigitalOnlyCart ? (
+                <fieldset className="payment-methods checkout-fulfilment-methods">
+                  <legend>How would you like to receive your order?</legend>
+                  <p className="checkout-fulfilment-help">Delivery goes to a delivery partner or collection park in your selected state; customers collect from there. Office pickup is only for customers coming to RESYIN in Benin City.</p>
+                  <label className="payment-method-option"><input type="radio" name="deliveryMethod" value="delivery" checked={form.deliveryMethod === "delivery"} onChange={handleChange} /><span><strong>Delivery</strong><small>RESYIN will arrange delivery.</small></span></label>
+                  <label className="payment-method-option"><input type="radio" name="deliveryMethod" value="pickup" checked={form.deliveryMethod === "pickup"} onChange={handleChange} /><span><strong>Pick up — no shipping fee</strong><small>Pick up from RESYIN Publications after confirmation.</small></span></label>
+                </fieldset>
+              ) : (
+                <div className="checkout-pickup-note">
+                  <strong>Digital download selected</strong>
+                  <span>No stock check or shipping is required for PDF/EPUB purchases. Access is granted after payment is confirmed.</span>
+                </div>
+              )}
 
-              {form.deliveryMethod === "delivery" ? (
+              {!isDigitalOnlyCart && (form.deliveryMethod === "delivery" ? (
                 <>
                   <label className="checkout-address-label">Your address or nearest landmark <span>Used only to choose the closest delivery partner or collection park in your state. We do not deliver to your doorstep.</span><input name="address" placeholder="House address, street, community, or nearest landmark" value={form.address} onChange={handleChange} required /></label>
                   <select name="country" value={form.country} onChange={handleChange} required>
@@ -211,7 +234,7 @@ export default function Checkout() {
                   <strong>RESYIN office pickup selected</strong>
                   <span>Collect from RESYIN Publications in Benin City after confirmation.</span>
                 </div>
-              )}
+              ))}
 
               <textarea
                 name="notes"
@@ -222,13 +245,17 @@ export default function Checkout() {
 
               <fieldset className="payment-methods">
                 <legend>Choose a payment method</legend>
-                {!hasPublisherBooks && <label className="payment-method-option">
+                {!hasPublisherBooks && !isDigitalOnlyCart && <label className="payment-method-option">
                   <input type="radio" name="paymentMethod" value="paystack" checked={form.paymentMethod === "paystack"} onChange={handleChange} />
                   <span><strong>Pay online securely</strong><small>Use card, bank transfer, or USSD through Paystack.</small></span>
                 </label>}
+                {!hasPublisherBooks && isDigitalOnlyCart && <label className="payment-method-option">
+                  <input type="radio" name="paymentMethod" value="paystack" checked={form.paymentMethod === "paystack"} onChange={handleChange} />
+                  <span><strong>Pay online securely</strong><small>Use card, bank transfer, or USSD through Paystack. Digital access is released after payment confirmation.</small></span>
+                </label>}
                 {canPayPublisherDirectly && <label className="payment-method-option"><input type="radio" name="paymentMethod" value="publisher_direct_transfer" checked={form.paymentMethod === "publisher_direct_transfer"} onChange={handleChange} /><span><strong>Pay the publisher directly</strong><small>Transfer to the publisher's verified account. The book becomes downloadable after the publisher confirms payment.</small></span></label>}
                 {storePaymentSettings?.manualTransferEnabled && <label className="payment-method-option"><input type="radio" name="paymentMethod" value="manual_bank_transfer" checked={form.paymentMethod === "manual_bank_transfer"} onChange={handleChange} /><span><strong>Transfer directly to RESYIN</strong><small>{storePaymentSettings.accountName} · {storePaymentSettings.accountNumber} · {storePaymentSettings.bankName}{storePaymentSettings.transferInstructions ? ` — ${storePaymentSettings.transferInstructions}` : ""}</small></span></label>}
-                <label className="payment-method-option"><input type="radio" name="paymentMethod" value="cash_on_delivery" checked={form.paymentMethod === "cash_on_delivery"} onChange={handleChange} /><span><strong>Pay on delivery by transfer</strong><small>When the agent arrives, transfer to the official RESYIN account sent to your WhatsApp or phone. The agent confirms payment before handing over the order; no cash is collected.</small></span></label>
+                {!isDigitalOnlyCart && <label className="payment-method-option"><input type="radio" name="paymentMethod" value="cash_on_delivery" checked={form.paymentMethod === "cash_on_delivery"} onChange={handleChange} /><span><strong>Pay on delivery by transfer</strong><small>When the agent arrives, transfer to the official RESYIN account sent to your WhatsApp or phone. The agent confirms payment before handing over the order; no cash is collected.</small></span></label>}
               </fieldset>
 
               <button

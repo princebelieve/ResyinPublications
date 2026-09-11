@@ -25,6 +25,7 @@ export default function ProductDetails() {
   const [deliveryInfo, setDeliveryInfo] = useState(null);
   const [selectedEdition, setSelectedEdition] = useState("paperback");
   const { addToCart, cart } = useCart();
+  const isDigitalSelected = ["pdf", "epub"].includes(selectedEdition);
 
   useEffect(() => {
     async function loadProduct() {
@@ -158,7 +159,15 @@ export default function ProductDetails() {
             </label>}
 
             {product.shortDescription && <p className="muted">{product.shortDescription}</p>}
-            <p><strong>{Number(product.editions?.find((item) => item.format === selectedEdition)?.stock ?? product.stock ?? 0) > 0 ? "In stock" : "Currently unavailable"}</strong></p>
+            <p>
+              <strong>
+                {isDigitalSelected
+                  ? "Digital download available"
+                  : Number(product.editions?.find((item) => item.format === selectedEdition)?.stock ?? product.stock ?? 0) > 0
+                    ? "In stock"
+                    : "Currently unavailable"}
+              </strong>
+            </p>
 
             {(product.digitalFiles?.pdf?.key || product.digitalFiles?.epub?.key) && (
               <div className="digital-book-downloads">
@@ -222,7 +231,9 @@ export default function ProductDetails() {
                 ? "Adding..."
                 : addSuccess
                   ? "Added ✔"
-                  : "Add To Cart"}
+                  : isDigitalSelected
+                    ? "Add Digital Copy"
+                    : "Add To Cart"}
             </button>
 
             <button
@@ -251,7 +262,7 @@ export default function ProductDetails() {
                 else setAddError(result.message || "Failed to add item to cart.");
               }}
             >
-              {addLoading ? "Adding..." : "Buy Now"}
+              {addLoading ? "Adding..." : isDigitalSelected ? `Buy ${selectedEdition.toUpperCase()}` : "Buy Now"}
             </button>
 
             {(addSuccess || addError) && (
