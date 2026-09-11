@@ -7,7 +7,7 @@ import Navbar from "../components/Navbar";
 
 import { useCart } from "../context/CartContext";
 
-import { getDigitalBookDownloadUrl, getProductById } from "../services/api";
+import { getDigitalBookDownloadUrl, getProductById, getShippingSummary } from "../services/api";
 
 import { setMetaTags, setProductSchema, getShareUrl } from "../utils/metaTags";
 
@@ -22,6 +22,7 @@ export default function ProductDetails() {
   const [addError, setAddError] = useState("");
   const [downloadMessage, setDownloadMessage] = useState("");
   const [expandedDescription, setExpandedDescription] = useState(false);
+  const [deliveryInfo, setDeliveryInfo] = useState(null);
   const [selectedEdition, setSelectedEdition] = useState("paperback");
   const { addToCart, cart } = useCart();
 
@@ -65,6 +66,12 @@ export default function ProductDetails() {
 
     loadProduct();
   }, [id]);
+
+  useEffect(() => {
+    getShippingSummary("NG")
+      .then(setDeliveryInfo)
+      .catch(() => setDeliveryInfo(null));
+  }, []);
 
   const lightboxItems = [
     ...(product?.gallery || []).map((img, index) => ({
@@ -112,207 +119,87 @@ export default function ProductDetails() {
     );
   }
 
-  const currentEdition = product?.editions?.find((item) => item.format === selectedEdition) || null;
-  const currentPrice = currentEdition ? Number(currentEdition.price || 0) : Number(product?.price || 0);
-  const currentSalePrice = currentEdition ? (currentEdition.salePrice != null ? Number(currentEdition.salePrice) : null) : (product?.salePrice != null ? Number(product.salePrice) : null);
-  const inStock = Number(currentEdition?.stock ?? product?.stock ?? 0) > 0;
-
-  const editionCards = (product.editions?.length
-    ? product.editions
-    : [{ format: selectedEdition || "paperback", label: "Paperback", price: product.price || 0, salePrice: product.salePrice ?? null, stock: product.stock || 0 }]
-  ).map((edition) => {
-    const price = Number(edition.price || 0);
-    const sale = edition.salePrice != null ? Number(edition.salePrice) : null;
-    const finalPrice = sale != null && sale < price ? sale : price;
-
-    return {
-      ...edition,
-      displayLabel: edition.label || edition.format || "Book",
-      finalPrice,
-    };
-  });
-
-  const [viewerIndex, setViewerIndex] = useState(0);
-  const [formatIndex, setFormatIndex] = useState(0);
-  const [touchStartX, setTouchStartX] = useState(null);
-
-  useEffect(() => {
-    if (formatIndex > editionCards.length - 1) {
-      setFormatIndex(0);
-    }
-  }, [editionCards.length, formatIndex]);
-
-  const viewerSlides = [
-    {
-      key: "cover",
-      content: (
-        <div className="product-demo-card product-cover-card">
-          <div className="product-hero-head">
-            <span className="product-brand-mark">RESYIN PUBLICATIONS</span>
-            <div className="product-hero-actions">
-              <button type="button" className="mini-icon" aria-label="Like this book">♥</button>
-              <button type="button" className="mini-icon" aria-label="Share this book" onClick={() => {
-                const shareUrl = getShareUrl(product._id, product.name);
-                navigator.clipboard?.writeText(shareUrl);
-              }}>↗</button>
-            </div>
-          </div>
-
-          <div className="product-hero-visual">
-            <img src={product.coverImage} alt={product.name} className="product-cover-hero" />
-          </div>
-
-          <div className="product-hero-meta">
-            <p className="eyebrow">{product.category || "Book"}</p>
-            <h1>{product.name}</h1>
-            {(product.author || product.brand) && <p className="author-line">by {product.author || product.brand}</p>}
-          </div>
-
-          <div className="product-hero-price-row">
-            <strong>₦{(currentSalePrice != null && currentSalePrice < currentPrice ? currentSalePrice : currentPrice).toLocaleString()}</strong>
-            {currentSalePrice != null && currentSalePrice < currentPrice && <span><s>₦{currentPrice.toLocaleString()}</s></span>}
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: "summary",
-      content: (
-        <div className="product-demo-card product-info-card">
-          <div className="card-header-row">
-            <span className="eyebrow">Highlights</span>
-            <span className="card-pill">Popular</span>
-          </div>
-          <h2>What readers will love</h2>
-          <ul>
-            <li>{product.shortDescription || "A powerful read with a strong story and clean presentation."}</li>
-            <li>{product.fullDescription ? product.fullDescription.split(".").slice(0, 2).join(".") : "Available in a format that matches your reading preference."}</li>
-            <li>{inStock ? "Ready to ship or download after payment." : "Currently being prepared for the next available order."}</li>
-          </ul>
-        </div>
-      ),
-    },
-    {
-      key: "details",
-      content: (
-        <div className="product-demo-card product-info-card">
-          <div className="card-header-row">
-            <span className="eyebrow">Book details</span>
-            <span className="card-pill">Details</span>
-          </div>
-          <h2>Edition and delivery</h2>
-          <div className="mini-details">
-            {product.category && <p><strong>Category:</strong> {product.category}</p>}
-            {product.vendor && <p><strong>Publisher:</strong> {product.vendor}</p>}
-            {deliveryInfo?.serviceName && <p><strong>Delivery:</strong> {deliveryInfo.serviceName}</p>}
-            {deliveryInfo?.estimatedDays && <p><strong>ETA:</strong> {deliveryInfo.estimatedDays}</p>}
-            {(product.sku || product.gtin) && <p><strong>Catalog:</strong> {product.sku || product.gtin}</p>}
-          </div>
-        </div>
-      ),
-    },
-  ];
-
-  const goToEdition = (editionFormat) => {
-    setSelectedEdition(editionFormat);
-    if (editionCards.some((edition) => edition.format === editionFormat)) {
-      const index = editionCards.findIndex((edition) => edition.format === editionFormat);
-      setFormatIndex(index >= 0 ? index : 0);
-    }
-  };
-
-  const swipeSlide = (direction) => {
-    const nextIndex = direction === "left" ? Math.min(viewerIndex + 1, viewerSlides.length - 1) : Math.max(viewerIndex - 1, 0);
-    setViewerIndex(nextIndex);
-  };
-
-  const handleTouchStart = (event) => {
-    setTouchStartX(event.touches[0].clientX);
-  };
-
-  const handleTouchEnd = (event) => {
-    if (touchStartX == null) return;
-    const endX = event.changedTouches[0].clientX;
-    const distance = touchStartX - endX;
-
-    if (Math.abs(distance) > 45) {
-      if (distance > 0) swipeSlide("left");
-      else swipeSlide("right");
-    }
-
-    setTouchStartX(null);
-  };
-
   return (
     <>
       <Navbar />
 
-      <div className="page product-page">
-        <div className="product-immersive-shell">
-          <div className="product-swipe-viewer" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-            <div className="product-slide-track" style={{ transform: `translateX(-${viewerIndex * 100}%)` }}>
-              {viewerSlides.map((slide) => (
-                <div key={slide.key} className="product-slide-item">
-                  {slide.content}
+      <div
+        className="page product-page"
+        style={{ "--product-image": `url("${product.coverImage}")` }}
+      >
+        <div className="product-detail">
+          <img
+            src={product.coverImage}
+            alt={product.name}
+            className="product-detail-image"
+          />
+
+          <div className="product-detail-content">
+            <h1>{product.name}</h1>
+
+            {(() => {
+              const edition = product.editions?.find((item) => item.format === selectedEdition);
+              const basePrice = edition ? edition.price : product.price;
+              const salePrice = edition ? edition.salePrice : product.salePrice;
+              return salePrice != null && Number(salePrice) < Number(basePrice) ? (
+              <div>
+                <h2>₦{Number(salePrice).toLocaleString()}</h2>
+                <p className="muted"><s>₦{Number(basePrice).toLocaleString()}</s></p>
+              </div>
+            ) : (
+              <h2>₦{Number(basePrice || 0).toLocaleString()}</h2>
+            );
+            })()}
+
+            {(product.editions?.length > 0) && <label className="edition-selector">Edition
+              <select value={selectedEdition} onChange={(event) => setSelectedEdition(event.target.value)}>
+                {product.editions.map((edition) => <option key={edition.format} value={edition.format}>{edition.label || edition.format} — ₦{Number(edition.salePrice != null && edition.salePrice < edition.price ? edition.salePrice : edition.price).toLocaleString()}</option>)}
+              </select>
+            </label>}
+
+            {product.shortDescription && <p className="muted">{product.shortDescription}</p>}
+            <p><strong>{Number(product.editions?.find((item) => item.format === selectedEdition)?.stock ?? product.stock ?? 0) > 0 ? "In stock" : "Currently unavailable"}</strong></p>
+
+            {(product.digitalFiles?.pdf?.key || product.digitalFiles?.epub?.key) && (
+              <div className="digital-book-downloads">
+                <strong>Digital editions</strong>
+                <p className="muted">Downloads become available after your payment is confirmed.</p>
+                <div>
+                  {product.digitalFiles?.pdf?.key && <button type="button" onClick={async () => { try { setDownloadMessage(""); const result = await getDigitalBookDownloadUrl(product._id, "pdf"); window.location.href = result.downloadUrl; } catch (error) { setDownloadMessage(error.message || "Sign in and complete payment to download this book."); } }}>Download PDF</button>}
+                  {product.digitalFiles?.epub?.key && <button type="button" onClick={async () => { try { setDownloadMessage(""); const result = await getDigitalBookDownloadUrl(product._id, "epub"); window.location.href = result.downloadUrl; } catch (error) { setDownloadMessage(error.message || "Sign in and complete payment to download this book."); } }}>Download EPUB</button>}
                 </div>
-              ))}
-            </div>
-          </div>
+                {downloadMessage && <p className="inline-toast error">{downloadMessage}</p>}
+              </div>
+            )}
 
-          <div className="product-slide-dots" aria-label="Book detail slides">
-            {viewerSlides.map((slide, index) => (
-              <button
-                key={slide.key}
-                type="button"
-                className={`slide-dot ${index === viewerIndex ? "active" : ""}`}
-                onClick={() => setViewerIndex(index)}
-                aria-label={`Show slide ${index + 1}`}
-              />
-            ))}
-          </div>
+            {(product.fullDescription || product.shortDescription) && (
+              <div className="product-description">
+                <p>
+                  {expandedDescription
+                    ? product.fullDescription || product.shortDescription
+                    : (
+                        product.fullDescription || product.shortDescription
+                      ).substring(0, 150)}
+                  {!expandedDescription &&
+                    (product.fullDescription || product.shortDescription)
+                      .length > 150 &&
+                    "..."}
+                </p>
+                {(product.fullDescription || product.shortDescription).length >
+                  150 && (
+                  <button
+                    type="button"
+                    className="view-more-btn"
+                    onClick={() => setExpandedDescription(!expandedDescription)}
+                  >
+                    {expandedDescription ? "Show Less" : "View More"}
+                  </button>
+                )}
+              </div>
+            )}
 
-          <div className="product-format-rail" aria-label="Book formats and pricing">
-            <div className="product-format-track" style={{ transform: `translateX(-${formatIndex * 100}%)` }}>
-              {editionCards.map((edition) => (
-                <button
-                  key={edition.format || edition.displayLabel}
-                  type="button"
-                  className={`format-choice ${selectedEdition === edition.format ? "selected" : ""}`}
-                  onClick={() => {
-                    goToEdition(edition.format);
-                    navigate("/checkout");
-                  }}
-                >
-                  <div className="format-choice-top">
-                    <span>{edition.displayLabel}</span>
-                    <strong>₦{edition.finalPrice.toLocaleString()}</strong>
-                  </div>
-
-                  <div className="format-choice-bottom">
-                    <span>{edition.stock > 0 ? "Ready to ship" : "Pre-order"}</span>
-                    <small>{edition.salePrice != null && edition.salePrice < edition.price ? `Save ₦${(edition.price - edition.salePrice).toLocaleString()}` : "Best choice"}</small>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="product-format-pager" aria-label="Format selection pager">
-            {editionCards.map((edition, index) => (
-              <button
-                key={`${edition.format || edition.displayLabel}-pager`}
-                type="button"
-                className={`format-pager-dot ${index === formatIndex ? "active" : ""}`}
-                onClick={() => setFormatIndex(index)}
-                aria-label={`Select format ${index + 1}`}
-              />
-            ))}
-          </div>
-
-          <div className="product-bottom-actions">
             <button
               type="button"
-              className="primary large"
               disabled={addLoading}
               onClick={async () => {
                 setAddError("");
@@ -320,28 +207,7 @@ export default function ProductDetails() {
                 setAddLoading(true);
 
                 const result = await addToCart(product, 1, selectedEdition);
-                setAddLoading(false);
 
-                if (result.success) {
-                  navigate("/checkout");
-                } else {
-                  setAddError(result.message || "Failed to add item to cart.");
-                }
-              }}
-            >
-              {addLoading ? "Preparing..." : "Proceed to checkout"}
-            </button>
-
-            <button
-              type="button"
-              className="secondary large"
-              disabled={addLoading}
-              onClick={async () => {
-                setAddError("");
-                setAddSuccess(false);
-                setAddLoading(true);
-
-                const result = await addToCart(product, 1, selectedEdition);
                 setAddLoading(false);
 
                 if (result.success) {
@@ -352,46 +218,285 @@ export default function ProductDetails() {
                 }
               }}
             >
-              {addLoading ? "Adding..." : "Add to cart"}
+              {addLoading
+                ? "Adding..."
+                : addSuccess
+                  ? "Added ✔"
+                  : "Add To Cart"}
             </button>
-          </div>
 
-          {(addSuccess || addError) && (
-            <div className={`inline-toast ${addSuccess ? "success" : "error"}`}>
-              {addSuccess ? "Added to cart" : addError}
-            </div>
-          )}
+            <button
+              type="button"
+              className="primary"
+              disabled={addLoading}
+              onClick={async () => {
+                setAddError("");
+                setAddSuccess(false);
+                setAddLoading(true);
 
-          {(product.digitalFiles?.pdf?.key || product.digitalFiles?.epub?.key) && (
-            <div className="digital-book-downloads compact-downloads">
-              <strong>Digital editions</strong>
-              <div>
-                {product.digitalFiles?.pdf?.key && (
-                  <button type="button" onClick={async () => { try { setDownloadMessage(""); const result = await getDigitalBookDownloadUrl(product._id, "pdf"); window.location.href = result.downloadUrl; } catch (error) { setDownloadMessage(error.message || "Sign in and complete payment to download this book."); } }}>PDF</button>
-                )}
-                {product.digitalFiles?.epub?.key && (
-                  <button type="button" onClick={async () => { try { setDownloadMessage(""); const result = await getDigitalBookDownloadUrl(product._id, "epub"); window.location.href = result.downloadUrl; } catch (error) { setDownloadMessage(error.message || "Sign in and complete payment to download this book."); } }}>EPUB</button>
-                )}
+                const alreadyInCart = cart.some(
+                  (item) => item.productId === product._id && item.editionKey === selectedEdition,
+                );
+
+                if (alreadyInCart) {
+                  setAddLoading(false);
+                  navigate("/checkout");
+                  return;
+                }
+
+                const result = await addToCart(product, 1, selectedEdition);
+                setAddLoading(false);
+
+                if (result.success) navigate("/checkout");
+                else setAddError(result.message || "Failed to add item to cart.");
+              }}
+            >
+              {addLoading ? "Adding..." : "Buy Now"}
+            </button>
+
+            {(addSuccess || addError) && (
+              <div
+                className={`inline-toast ${addSuccess ? "success" : "error"}`}
+              >
+                {addSuccess ? "Added to cart" : addError}
               </div>
-              {downloadMessage && <p className="inline-toast error">{downloadMessage}</p>}
-            </div>
-          )}
+            )}
 
-          <div className="product-extra-panel">
-            <div className="product-extra-box">
-              <h3>About this book</h3>
-              <p>{product.fullDescription || product.shortDescription || "No description available yet."}</p>
-            </div>
+            <div className="product-share-section">
+              <p
+                style={{
+                  marginTop: "1.5rem",
+                  fontSize: "0.9rem",
+                  color: "#666",
+                }}
+              >
+                Share:
+              </p>
+              <div
+                className="share-buttons"
+                style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}
+              >
+                <button
+                  type="button"
+                  className="share-btn share-facebook"
+                  title="Share on Facebook"
+                  onClick={() => {
+                    const shareUrl = getShareUrl(product._id, product.name);
+                    window.open(
+                      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+                      "_blank",
+                      "width=600,height=400",
+                    );
+                  }}
+                  style={{
+                    padding: "0.5rem 1rem",
+                    borderRadius: "4px",
+                    border: "none",
+                    backgroundColor: "#1877f2",
+                    color: "white",
+                    cursor: "pointer",
+                    fontSize: "0.85rem",
+                  }}
+                >
+                  Facebook
+                </button>
 
-            <div className="product-extra-box">
-              <h3>More details</h3>
-              {product.category && <p><strong>Category:</strong> {product.category}</p>}
-              {product.brand && <p><strong>Author:</strong> {product.brand}</p>}
-              {product.vendor && <p><strong>Publisher:</strong> {product.vendor}</p>}
-              {(product.sku || product.gtin) && <p><strong>Catalog:</strong> {product.sku || product.gtin}</p>}
+                <button
+                  type="button"
+                  className="share-btn share-twitter"
+                  title="Share on Twitter"
+                  onClick={() => {
+                    const shareUrl = getShareUrl(product._id, product.name);
+                    window.open(
+                      `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=Explore ${encodeURIComponent(product.name)} from RESYIN PUBLICATIONS`,
+                      "_blank",
+                      "width=600,height=400",
+                    );
+                  }}
+                  style={{
+                    padding: "0.5rem 1rem",
+                    borderRadius: "4px",
+                    border: "none",
+                    backgroundColor: "#1da1f2",
+                    color: "white",
+                    cursor: "pointer",
+                    fontSize: "0.85rem",
+                  }}
+                >
+                  Twitter
+                </button>
+
+                <button
+                  type="button"
+                  className="share-btn share-whatsapp"
+                  title="Share on WhatsApp"
+                  onClick={() => {
+                    const shareUrl = getShareUrl(product._id, product.name);
+                    window.open(
+                      `https://wa.me/?text=${encodeURIComponent(`Check out this product: ${product.name} - ${shareUrl}`)}`,
+                      "_blank",
+                    );
+                  }}
+                  style={{
+                    padding: "0.5rem 1rem",
+                    borderRadius: "4px",
+                    border: "none",
+                    backgroundColor: "#25d366",
+                    color: "white",
+                    cursor: "pointer",
+                    fontSize: "0.85rem",
+                  }}
+                >
+                  WhatsApp
+                </button>
+
+                <button
+                  type="button"
+                  className="share-btn share-copy"
+                  title="Copy link"
+                  onClick={() => {
+                    const shareUrl = getShareUrl(product._id, product.name);
+                    navigator.clipboard.writeText(shareUrl);
+                    alert("Link copied to clipboard!");
+                  }}
+                  style={{
+                    padding: "0.5rem 1rem",
+                    borderRadius: "4px",
+                    border: "1px solid #ddd",
+                    backgroundColor: "#f5f5f5",
+                    color: "#333",
+                    cursor: "pointer",
+                    fontSize: "0.85rem",
+                  }}
+                >
+                  Copy Link
+                </button>
+              </div>
             </div>
           </div>
         </div>
+
+        {(deliveryInfo?.estimatedDays || deliveryInfo?.serviceName || product.category || product.brand || product.vendor || product.countryOfOrigin || product.condition || product.sku || product.gtin) && (
+          <section className="product-information-grid" aria-label="Book information">
+            {(deliveryInfo?.estimatedDays || deliveryInfo?.serviceName) && (
+              <div className="cart-summary product-information-card">
+                <h3>Delivery</h3>
+                {deliveryInfo.serviceName && <p><strong>Method:</strong> {deliveryInfo.serviceName}</p>}
+                {deliveryInfo.estimatedDays && <p><strong>Estimated delivery to Nigeria:</strong> {deliveryInfo.estimatedDays}</p>}
+                <p className="muted">Your delivery fee and estimate are confirmed for your destination at checkout.</p>
+              </div>
+            )}
+
+            {(product.category || product.brand || product.vendor || product.countryOfOrigin || product.condition || product.sku || product.gtin) && (
+              <div className="cart-summary product-information-card">
+                <h3>Book details</h3>
+                {product.category && <p><strong>Category:</strong> {product.category}</p>}
+                {product.brand && <p><strong>Author:</strong> {product.brand}</p>}
+                {product.vendor && <p><strong>Publisher:</strong> {product.vendor}</p>}
+                {product.countryOfOrigin && <p><strong>Country of origin:</strong> {product.countryOfOrigin}</p>}
+                {product.condition && <p><strong>Condition:</strong> {product.condition}</p>}
+                {(product.sku || product.gtin) && <p><strong>Catalog code / ISBN:</strong> {product.sku || product.gtin}</p>}
+              </div>
+            )}
+          </section>
+        )}
+
+        {product.gallery?.length > 0 && (
+          <div className="gallery-strip">
+            {product.gallery.map((img, index) => (
+              <img
+                key={index}
+                src={img}
+                alt={`${product.name}-${index}`}
+                className="gallery-thumb"
+                onClick={() => setLightboxIndex(index)}
+              />
+            ))}
+          </div>
+        )}
+
+        {product.pieces?.length > 0 && (
+          <div className="pieces-section">
+            <h2>Included Pieces</h2>
+
+            <div className="pieces-grid">
+              {product.pieces.map((piece, index) => (
+                <div key={index} className="piece-display-card">
+                  {piece.image && (
+                    <img
+                      src={piece.image}
+                      alt={piece.name}
+                      className="piece-image"
+                      onClick={() =>
+                        setLightboxIndex((product.gallery?.length || 0) + index)
+                      }
+                    />
+                  )}
+
+                  <div className="piece-content">
+                    <h3>{piece.name}</h3>
+
+                    {piece.dimensions && <p>{piece.dimensions}</p>}
+
+                    {piece.description && <span>{piece.description}</span>}
+
+                    <strong>
+                      ₦{Number(piece.price || 0).toLocaleString()}
+                    </strong>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {lightboxIndex !== null && (
+          <div className="lightbox">
+            <button
+              className="lightbox-close"
+              onClick={() => setLightboxIndex(null)}
+            >
+              ✕
+            </button>
+
+            {lightboxIndex > 0 && (
+              <button
+                className="lightbox-arrow left"
+                onClick={() => setLightboxIndex((prev) => prev - 1)}
+              >
+                ‹
+              </button>
+            )}
+
+            {lightboxIndex < lightboxItems.length - 1 && (
+              <button
+                className="lightbox-arrow right"
+                onClick={() => setLightboxIndex((prev) => prev + 1)}
+              >
+                ›
+              </button>
+            )}
+
+            <div
+              className="lightbox-slider"
+              style={{
+                transform: `translateX(-${lightboxIndex * 100}%)`,
+              }}
+            >
+              {lightboxItems.map((item, index) => (
+                <div className="lightbox-slide" key={index}>
+                  <img src={item.image} alt={item.title} />
+
+                  <div className="lightbox-overlay">
+                    <h3>{item.title}</h3>
+
+                    {item.description && <p>{item.description}</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
