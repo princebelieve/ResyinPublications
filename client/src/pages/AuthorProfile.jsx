@@ -1,8 +1,11 @@
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import useScrollReveal from "../hooks/useScrollReveal";
 
 export default function AuthorProfile() {
+  useScrollReveal();
+
   return (
     <>
       <Navbar />
