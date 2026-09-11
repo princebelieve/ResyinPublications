@@ -382,6 +382,14 @@ export async function getPublicPublisherSubscriptionSettings() {
   return apiRequest("/api/publisher-subscription-settings/public");
 }
 
+export async function updatePublisherPaymentAccount(data, token) {
+  return apiRequest("/api/publishers/payment-account", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(data),
+  });
+}
+
 export async function getNigerianBanks() {
   return apiRequest("/api/payment-settings/banks");
 }

@@ -13,6 +13,16 @@ const initialSettings = {
   authorTerms: "",
 };
 
+function formatNaira(value) {
+  const number = Number(value || 0);
+  return Number.isFinite(number) ? `₦${number.toLocaleString("en-NG")}` : "₦0";
+}
+
+function parseNaira(value) {
+  const cleaned = String(value || "").replace(/[^\d]/g, "");
+  return Number(cleaned || 0);
+}
+
 export default function AdminPublisherSubscriptionSettings() {
   const { token } = useAuth();
   const [settings, setSettings] = useState(initialSettings);
@@ -28,7 +38,7 @@ export default function AdminPublisherSubscriptionSettings() {
     const { name, value, checked, type } = event.target;
     setSettings((current) => ({
       ...current,
-      [name]: type === "checkbox" ? checked : ["annualFee", "subscriptionDays", "gracePeriodDays"].includes(name) ? Number(value) : value,
+      [name]: type === "checkbox" ? checked : name === "annualFee" ? parseNaira(value) : ["subscriptionDays", "gracePeriodDays"].includes(name) ? Number(value) : value,
     }));
   }
 
@@ -36,7 +46,11 @@ export default function AdminPublisherSubscriptionSettings() {
     event.preventDefault();
     setMessage("");
     try {
-      await updatePublisherSubscriptionSettings(settings, token);
+      await updatePublisherSubscriptionSettings({
+        ...settings,
+        annualFee: Number(settings.annualFee || 0),
+        currency: "NGN",
+      }, token);
       setMessage("Publisher subscription settings saved.");
     } catch (error) {
       setMessage(error.message || "Unable to save subscription settings.");
@@ -49,8 +63,8 @@ export default function AdminPublisherSubscriptionSettings() {
       <p className="muted">Control how external authors and publishers submit books for review and listing on RESYIN.</p>
       <form className="form" onSubmit={save}>
         <label className="wizard-checkbox"><input type="checkbox" name="enabled" checked={settings.enabled} onChange={change} /><span>Enable publisher submissions</span></label>
-        <label>Publisher listing fee<input required={settings.enabled} type="number" min="0" name="annualFee" value={settings.annualFee} onChange={change} /></label>
-        <label>Currency<input name="currency" value={settings.currency} onChange={change} maxLength="3" /></label>
+        <label>Annual subscription fee<input required={settings.enabled} type="text" name="annualFee" value={formatNaira(settings.annualFee).replace("₦", "") } onChange={change} inputMode="numeric" placeholder="250000" /></label>
+        <label>Currency<input name="currency" value={settings.currency} onChange={change} maxLength="3" readOnly /></label>
         <label>Listing period in days<input type="number" min="1" name="subscriptionDays" value={settings.subscriptionDays} onChange={change} /></label>
         <label>Grace period in days<input type="number" min="0" name="gracePeriodDays" value={settings.gracePeriodDays} onChange={change} /></label>
         <label className="wizard-checkbox"><input type="checkbox" name="requireAdminApproval" checked={settings.requireAdminApproval} onChange={change} /><span>Require admin approval before an author is listed</span></label>

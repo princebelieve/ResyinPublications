@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import GoogleSignInButton from "../components/GoogleSignInButton";
-import { loginUser, resendVerificationEmail, signInWithGoogle } from "../services/api";
+import { getProfile, loginUser, resendVerificationEmail, signInWithGoogle } from "../services/api";
 import useAuth from "../context/AuthContext";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -50,9 +50,13 @@ export default function Login() {
       }
 
       const pendingCheckout = localStorage.getItem("pendingCheckout");
+      const profile = await getProfile(res.accessToken);
+      const isPublisherApproved = profile?.user?.publisherStatus === "approved";
 
       if (payload.role === "admin") {
         navigate("/admin/products");
+      } else if (isPublisherApproved) {
+        navigate("/publish-with-us");
       } else if (pendingCheckout === "true") {
         localStorage.removeItem("pendingCheckout");
 
@@ -108,9 +112,13 @@ export default function Login() {
         return;
       }
       const payload = JSON.parse(atob(res.accessToken.split(".")[1]));
+      const profile = await getProfile(res.accessToken);
+      const isPublisherApproved = profile?.user?.publisherStatus === "approved";
 
       if (payload.role === "admin") {
         navigate("/admin/products");
+      } else if (isPublisherApproved) {
+        navigate("/publish-with-us");
       } else {
         navigate("/dashboard");
       }

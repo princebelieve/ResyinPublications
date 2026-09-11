@@ -5,41 +5,78 @@ const { createProduct } = require("../controllers/product.controller");
 const PublisherSubscriptionSettings = require("../models/PublisherSubscriptionSettings");
 const User = require("../models/User");
 const Order = require("../models/Order");
-const paystack = require("../services/paystack");
 const { createNotification, notifyAdminTeam } = require("../services/notification.service");
 const { sendPushToUser } = require("../services/push.service");
 
 const router = express.Router();
 
-async function verifyAccount(bankCode, accountNumber) {
-  const normalizedNumber = String(accountNumber || "").replace(/\D/g, "");
-  if (!bankCode || normalizedNumber.length !== 10) throw Object.assign(new Error("Select a bank and enter a valid 10-digit account number."), { status: 400 });
-  try {
-    const response = await paystack.get("/bank/resolve", { params: { bank_code: bankCode, account_number: normalizedNumber } });
-    const account = response.data?.data;
-    if (!account?.account_name) throw new Error("This account could not be verified.");
-    return { accountName: account.account_name, accountNumber: String(account.account_number || normalizedNumber).replace(/\D/g, "") };
-  } catch (error) {
-    throw Object.assign(new Error(error.response?.data?.message || error.message || "This account could not be verified."), { status: 400 });
-  }
-}
-
 router.post("/apply", protect, async (req, res) => {
-  const { bankName, bankCode, accountNumber, note } = req.body;
-  if (!bankName || !bankCode || !accountNumber) return res.status(400).json({ message: "Publisher bank details are required." });
+  const { publisherName, publisherType, website, bio, note } = req.body;
+
+  if (!publisherName || !publisherType) {
+    return res.status(400).json({ message: "Please enter your publishing name and publishing type." });
+  }
+
   try {
-    const account = await verifyAccount(bankCode, accountNumber);
     req.user.publisherStatus = "pending";
-    req.user.publisherBankName = String(bankName).trim();
-    req.user.publisherBankCode = String(bankCode).trim();
-    req.user.publisherAccountName = account.accountName;
-    req.user.publisherAccountNumber = account.accountNumber;
+    req.user.publisherName = String(publisherName).trim();
+    req.user.publisherType = String(publisherType).trim();
+    req.user.publisherWebsite = String(website || "").trim();
+    req.user.publisherBio = String(bio || "").trim();
     req.user.publisherApplicationNote = String(note || "").trim();
+
     await req.user.save();
-    await notifyAdminTeam({ type: "publisher.application.submitted", title: "Publisher application submitted", body: `${req.user.name || req.user.email} submitted publisher details for annual subscription approval.`, link: "/admin/users", data: { userId: req.user._id } });
-    res.json({ message: "Publisher application submitted. An administrator must confirm your annual subscription before you can upload books." });
+    await notifyAdminTeam({
+      type: "publisher.application.submitted",
+      title: "Publisher application submitted",
+      body: `${req.user.name || req.user.email} submitted a publisher application for review.`,
+      link: "/admin/users",
+      data: { userId: req.user._id },
+    });
+
+    res.json({
+      message: "Publisher application submitted. An administrator will review your account and activate your subscription.",
+    });
   } catch (error) {
-    res.status(error.status || 400).json({ message: error.message });
+    res.status(400).json({ message: error.message || "Unable to submit publisher application." });
+  }
+});
+
+router.put("/payment-account", protect, async (req, res) => {
+  const { bankName, bankCode, accountNumber, accountName, paymentInstructions } = req.body;
+  const normalizedBankName = String(bankName || "").trim();
+  const normalizedBankCode = String(bankCode || "").trim();
+  const normalizedAccountNumber = String(accountNumber || "").replace(/\D/g, "");
+  const normalizedAccountName = String(accountName || "").trim();
+
+  if (!normalizedBankName || !normalizedBankCode || normalizedAccountNumber.length !== 10) {
+    return res.status(400).json({ message: "Select a valid bank and enter a 10-digit account number." });
+  }
+
+  if (!normalizedAccountName) {
+    return res.status(400).json({ message: "Enter the exact account holder name for the direct payment account." });
+  }
+
+  try {
+    req.user.publisherBankName = normalizedBankName;
+    req.user.publisherBankCode = normalizedBankCode;
+    req.user.publisherAccountName = normalizedAccountName;
+    req.user.publisherAccountNumber = normalizedAccountNumber;
+    req.user.publisherPaymentInstructions = String(paymentInstructions || "").trim();
+    await req.user.save();
+
+    res.json({
+      message: "Direct payment account saved.",
+      account: {
+        bankName: req.user.publisherBankName,
+        bankCode: req.user.publisherBankCode,
+        accountName: req.user.publisherAccountName,
+        accountNumber: req.user.publisherAccountNumber,
+        paymentInstructions: req.user.publisherPaymentInstructions,
+      },
+    });
+  } catch (error) {
+    res.status(400).json({ message: error.message || "Unable to save publisher payment account." });
   }
 });
 

@@ -4,7 +4,10 @@ import PRODUCT_CATEGORY_OPTIONS from "../config/productCategoryOptions";
 
 const STORAGE_KEY = "resyin-book-upload-draft";
 const formatOptions = [["paperback", "Paperback"], ["hardcover", "Hardcover (optional)"], ["pdf", "PDF"], ["epub", "EPUB"]];
-const emptyFormat = (format, label) => ({ format, label, price: "", salePrice: "", stock: 0, isbn: "", sku: "", shippingWeight: 0 });
+const formatCode = { paperback: "PB", hardcover: "HC", pdf: "PDF", epub: "EPUB" };
+const slugify = (value) => String(value || "book").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 24) || "book";
+const generatedSku = (title, format) => `RSY-${slugify(title)}-${formatCode[format] || String(format).toUpperCase().slice(0, 3)}`;
+const emptyFormat = (format, label) => ({ format, label, price: "", salePrice: "", stock: 0, isbn: "", sku: generatedSku("", format), shippingWeight: 0 });
 const blankForm = { name: "", category: "", brand: "", vendor: "", shortDescription: "", fullDescription: "", coverImage: null, gallery: [], featured: false, status: "active" };
 
 function readDraft() {
@@ -49,7 +52,7 @@ export default function BookUploadForm({ onSubmit, editingProduct = null }) {
         salePrice: item.salePrice ?? "",
         stock: item.stock ?? 0,
         isbn: item.isbn || "",
-        sku: item.sku || "",
+        sku: item.sku || generatedSku(editingProduct.name || form.name, item.format),
         shippingWeight: item.shippingWeight ?? 0,
       })));
       return;
@@ -77,13 +80,23 @@ export default function BookUploadForm({ onSubmit, editingProduct = null }) {
   }
 
   function toggleFormat(format, label) {
-    setFormats((current) => current.some((item) => item.format === format) ? current.filter((item) => item.format !== format) : [...current, emptyFormat(format, label)]);
+    setFormats((current) => {
+      if (current.some((item) => item.format === format)) return current.filter((item) => item.format !== format);
+      return [...current, { ...emptyFormat(format, label), sku: generatedSku(form.name, format) }];
+    });
   }
 
   function changeFormat(format, event) {
     const { name, value } = event.target;
-    setFormats((current) => current.map((item) => item.format === format ? { ...item, [name]: value } : item));
+    setFormats((current) => current.map((item) => item.format === format ? { ...item, [name]: value, ...(name === "sku" ? {} : {}) } : item));
   }
+
+  useEffect(() => {
+    setFormats((current) => current.map((item) => ({
+      ...item,
+      sku: item.sku || generatedSku(form.name, item.format),
+    })));
+  }, [form.name]);
 
   async function submit(event) {
     event.preventDefault();
@@ -119,7 +132,7 @@ export default function BookUploadForm({ onSubmit, editingProduct = null }) {
 
   return <form className="product-wizard-shell book-upload-form" onSubmit={submit}>
     <section className="wizard-card wizard-step"><div className="wizard-step-header"><h2>Book information</h2><p>Keep it simple: title, author, and cover are the essentials. Everything else can be filled in later if needed.</p></div><div className="wizard-grid"><input name="name" placeholder="Book title" value={form.name} onChange={change} /><select name="category" value={form.category} onChange={change}><option value="">Select subject</option>{PRODUCT_CATEGORY_OPTIONS.map((category) => <option key={category}>{category}</option>)}</select><input name="brand" placeholder="Author" value={form.brand} onChange={change} /><input name="vendor" placeholder="Publisher (optional)" value={form.vendor} onChange={change} /></div><textarea name="shortDescription" placeholder="Short description (optional)" value={form.shortDescription} onChange={change} /><textarea name="fullDescription" placeholder="Full book description (optional)" value={form.fullDescription} onChange={change} /></section>
-    <section className="wizard-card wizard-step"><div className="wizard-step-header"><h2>Available formats</h2><p>Check only the formats this book actually offers. Hardcover stays optional, and the rest of the metadata can be filled in later.</p></div><div className="book-format-checks">{formatOptions.map(([format, label]) => <label className="wizard-checkbox" key={format}><input type="checkbox" checked={formats.some((item) => item.format === format)} onChange={() => toggleFormat(format, label)} /><span>{label}</span></label>)}</div>{formats.length > 0 && <div className="book-format-settings">{formats.map((item) => <div className="book-format-setting" key={item.format}><strong>{item.label}</strong><input type="number" min="0" name="price" placeholder="Price (optional)" value={item.price} onChange={(event) => changeFormat(item.format, event)} /><input type="number" min="0" name="salePrice" placeholder="Sale price (optional)" value={item.salePrice} onChange={(event) => changeFormat(item.format, event)} /><input type="number" min="0" name="stock" placeholder="Stock (optional)" value={item.stock} onChange={(event) => changeFormat(item.format, event)} /><input name="isbn" placeholder="ISBN (optional)" value={item.isbn} onChange={(event) => changeFormat(item.format, event)} /><input name="sku" placeholder="SKU (optional)" value={item.sku} onChange={(event) => changeFormat(item.format, event)} /></div>)}</div>}</section>
+    <section className="wizard-card wizard-step"><div className="wizard-step-header"><h2>Available formats</h2><p>Check only the formats this book actually offers. Hardcover stays optional, and the rest of the metadata can be filled in later.</p></div><div className="book-format-checks">{formatOptions.map(([format, label]) => <label className="wizard-checkbox" key={format}><input type="checkbox" checked={formats.some((item) => item.format === format)} onChange={() => toggleFormat(format, label)} /><span>{label}</span></label>)}</div>{formats.length > 0 && <div className="book-format-settings">{formats.map((item) => <div className="book-format-setting" key={item.format}><strong>{item.label}</strong><input type="number" min="0" name="price" placeholder="Price (optional)" value={item.price} onChange={(event) => changeFormat(item.format, event)} /><input type="number" min="0" name="salePrice" placeholder="Sale price (optional)" value={item.salePrice} onChange={(event) => changeFormat(item.format, event)} /><input type="number" min="0" name="stock" placeholder="Stock (optional)" value={item.stock} onChange={(event) => changeFormat(item.format, event)} /><input name="isbn" placeholder="ISBN (optional)" value={item.isbn} onChange={(event) => changeFormat(item.format, event)} /><input name="sku" placeholder="Auto-generated SKU" value={item.sku || generatedSku(form.name, item.format)} readOnly aria-readonly="true" /></div>)}</div>}</section>
     <section className="wizard-card wizard-step"><div className="wizard-step-header"><h2>Book files</h2><p>Cover is required. Other files can be added later when the book is ready.</p></div><label>Book cover<input required={!editingProduct} type="file" accept="image/*" onChange={(event) => setForm((current) => ({ ...current, coverImage: event.target.files?.[0] || null }))} /></label><label>Additional images<input type="file" accept="image/*" multiple onChange={(event) => setForm((current) => ({ ...current, gallery: Array.from(event.target.files || []) }))} /></label>{formats.some((item) => item.format === "pdf") && <label>PDF file<input type="file" accept="application/pdf,.pdf" onChange={(event) => setPdfFile(event.target.files?.[0] || null)} /></label>}{formats.some((item) => item.format === "epub") && <label>EPUB file<input type="file" accept="application/epub+zip,.epub" onChange={(event) => setEpubFile(event.target.files?.[0] || null)} /></label>}<label className="wizard-checkbox"><input type="checkbox" name="featured" checked={form.featured} onChange={change} /><span>Feature this book in the bookstore</span></label></section>
     {message && <p className="inline-toast error" role="alert">{message}</p>}<button className="primary" type="submit" disabled={saving}><Upload size={16} /> {saving ? (editingProduct ? "Saving book..." : "Uploading book...") : (editingProduct ? "Save book" : "Upload book")}</button>
   </form>;

@@ -157,6 +157,8 @@ export function AuthProvider({ children }) {
 
       isAdminOrSubadmin: user?.role === "admin" || user?.role === "subadmin",
 
+      isPublisherApproved: user?.publisherStatus === "approved",
+
       login,
 
       updateToken,
