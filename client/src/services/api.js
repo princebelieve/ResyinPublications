@@ -268,10 +268,37 @@ export async function applyAsPublisher(payload, token) { return apiRequest("/api
 export async function getPendingPublisherOrders(token) { return apiRequest("/api/publishers/orders/pending", { headers: { Authorization: `Bearer ${token}` } }); }
 export async function confirmPublisherOrderPayment(orderId, token) { return apiRequest(`/api/publishers/orders/${orderId}/confirm-payment`, { method: "POST", headers: { Authorization: `Bearer ${token}` } }); }
 
-export async function getShippingSummary(country = "NG") {
-  const res = await fetch(`${BASE_URL}/api/shipping/summary?country=${encodeURIComponent(country)}`);
+export async function getShippingSummary(country = "NG", state = "") {
+  const params = new URLSearchParams({ country: String(country || "NG") });
+  if (state) params.set("state", state);
+
+  const res = await fetch(`${BASE_URL}/api/shipping/summary?${params.toString()}`);
   const data = await readApiResponse(res);
-  if (!res.ok) throw new Error(data.message || "Unable to load delivery information");
+
+  if (!res.ok) {
+    if (res.status === 400 && data && typeof data === "object") {
+      return {
+        shippingFee: Number(data.shippingFee || 0),
+        flatRate: Number(data.flatRate || data.shippingFee || 0),
+        estimatedDays: data.estimatedDays || "3-7 business days",
+        serviceName: data.serviceName || "Standard delivery",
+        currency: data.currency || "NGN",
+        dutiesAndTaxes: data.dutiesAndTaxes || "customer",
+        shippingAvailable: true,
+      };
+    }
+
+    return {
+      shippingFee: 0,
+      flatRate: 0,
+      estimatedDays: "3-7 business days",
+      serviceName: "Standard delivery",
+      currency: "NGN",
+      dutiesAndTaxes: "customer",
+      shippingAvailable: true,
+    };
+  }
+
   return data;
 }
 

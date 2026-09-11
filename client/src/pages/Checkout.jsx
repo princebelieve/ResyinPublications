@@ -91,7 +91,7 @@ export default function Checkout() {
           setShippingInfo({ serviceName: "Pickup", estimatedDays: "Ready after confirmation" });
           return;
         }
-        if (!form.country) {
+        if (!form.country || (form.country === "NG" && !form.state)) {
           setShippingError("");
           setShippingFee(0);
           setShippingInfo(null);

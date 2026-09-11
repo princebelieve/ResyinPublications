@@ -7,7 +7,7 @@ import Navbar from "../components/Navbar";
 
 import { useCart } from "../context/CartContext";
 
-import { getDigitalBookDownloadUrl, getProductById, getShippingSummary } from "../services/api";
+import { getDigitalBookDownloadUrl, getProductById } from "../services/api";
 
 import { setMetaTags, setProductSchema, getShareUrl } from "../utils/metaTags";
 
@@ -22,7 +22,6 @@ export default function ProductDetails() {
   const [addError, setAddError] = useState("");
   const [downloadMessage, setDownloadMessage] = useState("");
   const [expandedDescription, setExpandedDescription] = useState(false);
-  const [deliveryInfo, setDeliveryInfo] = useState(null);
   const [selectedEdition, setSelectedEdition] = useState("paperback");
   const { addToCart, cart } = useCart();
 
@@ -66,12 +65,6 @@ export default function ProductDetails() {
 
     loadProduct();
   }, [id]);
-
-  useEffect(() => {
-    getShippingSummary("NG")
-      .then(setDeliveryInfo)
-      .catch(() => setDeliveryInfo(null));
-  }, []);
 
   const lightboxItems = [
     ...(product?.gallery || []).map((img, index) => ({
@@ -395,7 +388,6 @@ export default function ProductDetails() {
               {product.category && <p><strong>Category:</strong> {product.category}</p>}
               {product.brand && <p><strong>Author:</strong> {product.brand}</p>}
               {product.vendor && <p><strong>Publisher:</strong> {product.vendor}</p>}
-              {deliveryInfo?.estimatedDays && <p><strong>Delivery:</strong> {deliveryInfo.estimatedDays}</p>}
               {(product.sku || product.gtin) && <p><strong>Catalog:</strong> {product.sku || product.gtin}</p>}
             </div>
           </div>

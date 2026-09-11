@@ -9,11 +9,28 @@ const NigerianStateShipping = require("../models/NigerianStateShipping");
 async function calculateShipping({ country = "", state = "", items = [] }) {
   const destination = country.toUpperCase().trim();
   const stateName = state.toUpperCase().trim();
+
+  const defaultSettings = await ShippingSettings.findOneAndUpdate(
+    { key: "default" },
+    { $setOnInsert: { key: "default" } },
+    { new: true, upsert: true, setDefaultsOnInsert: true },
+  );
+
+  const defaultShippingFee = Number(defaultSettings?.defaultShippingPrice || 0);
+  const defaultEstimate = defaultSettings?.defaultDeliveryEstimate || "3-7 business days";
+
   if (destination === "NG") {
     if (!stateName) {
       return {
-        shippingAvailable: false,
-        message: "Select a Nigerian state to see its delivery price.",
+        shippingFee: defaultShippingFee,
+        flatRate: defaultShippingFee,
+        estimatedDays: defaultEstimate,
+        serviceName: "Standard delivery",
+        currency: "NGN",
+        dutiesAndTaxes: "customer",
+        shippingAvailable: true,
+        rateScope: "default",
+        message: "A Nigerian state was not selected; showing the default delivery estimate.",
       };
     }
 
