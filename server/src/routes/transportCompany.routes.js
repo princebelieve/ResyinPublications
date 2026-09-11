@@ -11,7 +11,9 @@ router.get("/", async (req, res) => {
   try {
     const state = String(req.query.state || "").trim().toUpperCase();
     const filter = { active: true, ...(state ? { states: state } : {}) };
-    res.json(await TransportCompany.find(filter).sort({ name: 1 }).lean());
+    if (!state) return res.json([]);
+    const scoped = await TransportCompany.find({ active: true, states: state }).sort({ name: 1 }).lean();
+    res.json(scoped);
   } catch { res.status(500).json({ message: "Unable to load transport companies." }); }
 });
 

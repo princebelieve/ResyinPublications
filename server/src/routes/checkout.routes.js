@@ -34,7 +34,7 @@ router.post("/", protect, async (req, res) => {
     if (!["paystack", "cash_on_delivery", "distributor_transfer", "manual_bank_transfer", "publisher_direct_transfer"].includes(paymentMethod)) {
       return res.status(400).json({ message: "Choose a valid payment method." });
     }
-    const selectedPickupLocation = String(pickupTransportCompany || "").trim() === "Other / specify a transport company or park"
+    const selectedPickupLocation = String(pickupTransportCompany || "").trim() === "Other / specify a delivery partner or park"
       ? String(pickupOtherLocation || "").trim()
       : String(pickupTransportCompany || "").trim();
     if (deliveryMethod === "delivery" && !selectedPickupLocation) {
