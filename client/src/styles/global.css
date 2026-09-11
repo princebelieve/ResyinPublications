@@ -1642,13 +1642,14 @@ button:hover {
 .product-detail-image {
   width: 100%;
   height: auto;
-
-  aspect-ratio: 4 / 3;
-
-  object-fit: cover;
-
+  max-height: 700px;
+  aspect-ratio: 3 / 4;
+  object-fit: contain;
+  object-position: center;
   border-radius: 24px;
   display: block;
+  padding: 18px;
+  background: linear-gradient(180deg, #f9f7f2, #f0f4ef);
 }
 
 .product-detail-content h1 {
@@ -4549,9 +4550,68 @@ iframe {
 /* ================= PRODUCT WIZARD ================= */
 
 .product-wizard-shell {
-  max-width: 920px;
+  max-width: 1180px;
   margin: 0 auto;
   padding: 30px 20px 80px;
+}
+
+.book-upload-primary-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 360px) minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.book-upload-cover-panel {
+  display: flex;
+}
+
+.book-upload-cover-box {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  padding: 18px;
+  border: 1px solid #e7e0d7;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #fffaf7 0%, #f3efe9 100%);
+}
+
+.book-upload-cover-preview,
+.book-upload-cover-placeholder {
+  width: 100%;
+  min-height: 380px;
+  border-radius: 18px;
+  object-fit: cover;
+  background: #eae2d8;
+  box-shadow: 0 18px 32px rgba(52, 31, 17, 0.12);
+}
+
+.book-upload-cover-placeholder {
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #7a6058;
+}
+
+.book-upload-cover-input {
+  display: grid;
+  gap: 8px;
+  color: #4d4037;
+  font-size: .8rem;
+  font-weight: 700;
+}
+
+.book-upload-cover-input input {
+  min-height: 46px;
+  padding: 10px 12px;
+}
+
+.book-upload-meta-panel {
+  display: grid;
+  gap: 16px;
 }
 
 .wizard-header {
@@ -4718,6 +4778,17 @@ iframe {
   min-height: auto;
 }
 
+@media (max-width: 900px) {
+  .book-upload-primary-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .book-upload-cover-preview,
+  .book-upload-cover-placeholder {
+    min-height: 320px;
+  }
+}
+
 @media (max-width: 768px) {
   .wizard-header {
     flex-direction: column;
@@ -4735,6 +4806,11 @@ iframe {
 
   .wizard-grid {
     grid-template-columns: 1fr;
+  }
+
+  .book-upload-cover-preview,
+  .book-upload-cover-placeholder {
+    min-height: 280px;
   }
 
   .wizard-actions {

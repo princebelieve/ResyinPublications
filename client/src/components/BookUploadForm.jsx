@@ -28,6 +28,19 @@ export default function BookUploadForm({ onSubmit, editingProduct = null }) {
   const [epubFile, setEpubFile] = useState(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [coverPreview, setCoverPreview] = useState(editingProduct?.coverImage || "");
+
+  useEffect(() => {
+    if (!form.coverImage || !(form.coverImage instanceof File)) {
+      setCoverPreview(editingProduct?.coverImage || "");
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(form.coverImage);
+    setCoverPreview(previewUrl);
+
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [form.coverImage, editingProduct?.coverImage]);
 
   useEffect(() => {
     if (editingProduct) {
@@ -131,9 +144,25 @@ export default function BookUploadForm({ onSubmit, editingProduct = null }) {
   }
 
   return <form className="product-wizard-shell book-upload-form" onSubmit={submit}>
-    <section className="wizard-card wizard-step"><div className="wizard-step-header"><h2>Book information</h2><p>Keep it simple: title, author, and cover are the essentials. Everything else can be filled in later if needed.</p></div><div className="wizard-grid"><input name="name" placeholder="Book title" value={form.name} onChange={change} /><select name="category" value={form.category} onChange={change}><option value="">Select subject</option>{PRODUCT_CATEGORY_OPTIONS.map((category) => <option key={category}>{category}</option>)}</select><input name="brand" placeholder="Author" value={form.brand} onChange={change} /><input name="vendor" placeholder="Publisher (optional)" value={form.vendor} onChange={change} /></div><textarea name="shortDescription" placeholder="Short description (optional)" value={form.shortDescription} onChange={change} /><textarea name="fullDescription" placeholder="Full book description (optional)" value={form.fullDescription} onChange={change} /></section>
+    <section className="wizard-card wizard-step">
+      <div className="wizard-step-header"><h2>Book information</h2><p>Keep it simple: title, author, and cover are the essentials. Everything else can be filled in later if needed.</p></div>
+      <div className="book-upload-primary-layout">
+        <div className="book-upload-cover-panel">
+          <div className="book-upload-cover-box">
+            {coverPreview ? <img src={coverPreview} alt="Book cover preview" className="book-upload-cover-preview" /> : <div className="book-upload-cover-placeholder"><span>Cover</span></div>}
+            <label className="book-upload-cover-input">Book cover<input required={!editingProduct} type="file" accept="image/*" onChange={(event) => setForm((current) => ({ ...current, coverImage: event.target.files?.[0] || null }))} /></label>
+          </div>
+        </div>
+
+        <div className="book-upload-meta-panel">
+          <div className="wizard-grid"><input name="name" placeholder="Book title" value={form.name} onChange={change} /><select name="category" value={form.category} onChange={change}><option value="">Select subject</option>{PRODUCT_CATEGORY_OPTIONS.map((category) => <option key={category}>{category}</option>)}</select><input name="brand" placeholder="Author" value={form.brand} onChange={change} /><input name="vendor" placeholder="Publisher (optional)" value={form.vendor} onChange={change} /></div>
+          <textarea name="shortDescription" placeholder="Short description (optional)" value={form.shortDescription} onChange={change} />
+          <textarea name="fullDescription" placeholder="Full book description (optional)" value={form.fullDescription} onChange={change} />
+        </div>
+      </div>
+    </section>
     <section className="wizard-card wizard-step"><div className="wizard-step-header"><h2>Available formats</h2><p>Check only the formats this book actually offers. Hardcover stays optional, and the rest of the metadata can be filled in later.</p></div><div className="book-format-checks">{formatOptions.map(([format, label]) => <label className="wizard-checkbox" key={format}><input type="checkbox" checked={formats.some((item) => item.format === format)} onChange={() => toggleFormat(format, label)} /><span>{label}</span></label>)}</div>{formats.length > 0 && <div className="book-format-settings">{formats.map((item) => <div className="book-format-setting" key={item.format}><strong>{item.label}</strong><input type="number" min="0" name="price" placeholder="Price (optional)" value={item.price} onChange={(event) => changeFormat(item.format, event)} /><input type="number" min="0" name="salePrice" placeholder="Sale price (optional)" value={item.salePrice} onChange={(event) => changeFormat(item.format, event)} /><input type="number" min="0" name="stock" placeholder="Stock (optional)" value={item.stock} onChange={(event) => changeFormat(item.format, event)} /><input name="isbn" placeholder="ISBN (optional)" value={item.isbn} onChange={(event) => changeFormat(item.format, event)} /><input name="sku" placeholder="Auto-generated SKU" value={item.sku || generatedSku(form.name, item.format)} readOnly aria-readonly="true" /></div>)}</div>}</section>
-    <section className="wizard-card wizard-step"><div className="wizard-step-header"><h2>Book files</h2><p>Cover is required. Other files can be added later when the book is ready.</p></div><label>Book cover<input required={!editingProduct} type="file" accept="image/*" onChange={(event) => setForm((current) => ({ ...current, coverImage: event.target.files?.[0] || null }))} /></label><label>Additional images<input type="file" accept="image/*" multiple onChange={(event) => setForm((current) => ({ ...current, gallery: Array.from(event.target.files || []) }))} /></label>{formats.some((item) => item.format === "pdf") && <label>PDF file<input type="file" accept="application/pdf,.pdf" onChange={(event) => setPdfFile(event.target.files?.[0] || null)} /></label>}{formats.some((item) => item.format === "epub") && <label>EPUB file<input type="file" accept="application/epub+zip,.epub" onChange={(event) => setEpubFile(event.target.files?.[0] || null)} /></label>}<label className="wizard-checkbox"><input type="checkbox" name="featured" checked={form.featured} onChange={change} /><span>Feature this book in the bookstore</span></label></section>
+    <section className="wizard-card wizard-step"><div className="wizard-step-header"><h2>Book files</h2><p>Cover is required. Other files can be added later when the book is ready.</p></div><label>Additional images<input type="file" accept="image/*" multiple onChange={(event) => setForm((current) => ({ ...current, gallery: Array.from(event.target.files || []) }))} /></label>{formats.some((item) => item.format === "pdf") && <label>PDF file<input type="file" accept="application/pdf,.pdf" onChange={(event) => setPdfFile(event.target.files?.[0] || null)} /></label>}{formats.some((item) => item.format === "epub") && <label>EPUB file<input type="file" accept="application/epub+zip,.epub" onChange={(event) => setEpubFile(event.target.files?.[0] || null)} /></label>}<label className="wizard-checkbox"><input type="checkbox" name="featured" checked={form.featured} onChange={change} /><span>Feature this book in the bookstore</span></label></section>
     {message && <p className="inline-toast error" role="alert">{message}</p>}<button className="primary" type="submit" disabled={saving}><Upload size={16} /> {saving ? (editingProduct ? "Saving book..." : "Uploading book...") : (editingProduct ? "Save book" : "Upload book")}</button>
   </form>;
 }
