@@ -125,9 +125,8 @@ export default function Navbar() {
 
           {isLoggedIn && <Link to="/dashboard">Dashboard</Link>}
 
-          {isLoggedIn && user?.distributorStatus !== "approved" && user?.distributorStatus !== "pending" && <Link to="/dashboard?distributor=apply">Become a RESYIN Partner</Link>}
+          {isLoggedIn && <Link to="/publish-with-us">Publish with us</Link>}
 
-          {isLoggedIn && user?.distributorStatus === "approved" && <Link to="/distributor">Partner Dashboard</Link>}
 
           {isAdmin && <Link to="/admin">Admin</Link>}
 
@@ -271,16 +270,11 @@ export default function Navbar() {
               </Link>
 
               {user?.distributorStatus !== "approved" && user?.distributorStatus !== "pending" && (
-                <Link to="/dashboard?distributor=apply" onClick={() => setOpen(false)}>
-                  Become a RESYIN Partner
+                <Link to="/publish-with-us" onClick={() => setOpen(false)}>
+                  Publish with us
                 </Link>
               )}
 
-              {user?.distributorStatus === "approved" && (
-                <Link to="/distributor" onClick={() => setOpen(false)}>
-                  Partner Dashboard
-                </Link>
-              )}
 
               <Link to="/profile" onClick={() => setOpen(false)}>
                 Profile
@@ -316,7 +310,7 @@ export default function Navbar() {
         </div>
       </div>
     </nav>
-    <div className="store-subnav"><Link to="/collection">All books</Link><Link to="/collection?q=Egonmwan">Prof. Johnson A. Egonmwan</Link><Link to="/collection?sort=newest">Latest additions</Link><Link to="/contact">Publish with us</Link><Link to="/support">Customer service</Link></div>
+    <div className="store-subnav"><Link to="/collection">All books</Link><Link to="/author/johnson-egonmwan">Dr. Johnson A. Egonmwan</Link><Link to="/collection?sort=newest">Latest additions</Link><Link to="/contact">Publish with us</Link><Link to="/support">Customer service</Link></div>
     </>
   );
 }

@@ -5,8 +5,9 @@ const { uploadToR2, uploadPrivateBookFile, deleteFromR2 } = require("../config/r
 const {
   createNotification,
   notifyAdmins,
+  notifyAdminTeam,
 } = require("../services/notification.service");
-const { sendPushToAdmins, sendPushToUser } = require("../services/push.service");
+const { sendPushToAdmins, sendPushToAdminTeam, sendPushToUser } = require("../services/push.service");
 
 async function assertUniqueProductName(name, excludedProductId) {
   const trimmedName = name?.trim();
@@ -204,6 +205,7 @@ async function createProduct(req, res) {
     const generatedSku = generateSKU(name, category);
 
     const isSubadmin = req.user?.role === "subadmin";
+    const isPublisherSubmission = req.publisherSubmission === true;
 
     const adminUsers = await User.find({ role: "admin" }).select("_id");
     const adminIds = adminUsers.map((admin) => admin._id);
@@ -231,7 +233,7 @@ async function createProduct(req, res) {
 
       featured: featured === "true" || featured === true,
 
-      status: isSubadmin ? "inactive" : status || "active",
+      status: isSubadmin || isPublisherSubmission ? "inactive" : status || "active",
 
       sku: generatedSku,
 
@@ -243,7 +245,7 @@ async function createProduct(req, res) {
       currency: "NGN",
       brand: brand || "",
       vendor: vendor || "",
-      publisherId: publisherId || null,
+      publisherId: isPublisherSubmission ? req.user._id : publisherId || null,
       platformCommissionRate: Math.min(100, Math.max(0, Number(platformCommissionRate ?? 10))),
       editions: editions ? JSON.parse(editions) : [],
       gtin: gtin || "",
@@ -262,31 +264,31 @@ async function createProduct(req, res) {
       shippingClass: shippingClass || "standard",
       shipsInternationally: shipsInternationally !== "false" && shipsInternationally !== false,
 
-      approved: !isSubadmin,
-      pendingApproval: isSubadmin,
-      hidden: isSubadmin,
-      submittedBy: isSubadmin ? req.user._id : undefined,
-      approvalRequestedBy: isSubadmin ? req.user._id : undefined,
+      approved: !isSubadmin && !isPublisherSubmission,
+      pendingApproval: isSubadmin || isPublisherSubmission,
+      hidden: isSubadmin || isPublisherSubmission,
+      submittedBy: isSubadmin || isPublisherSubmission ? req.user._id : undefined,
+      approvalRequestedBy: isSubadmin || isPublisherSubmission ? req.user._id : undefined,
     });
 
-    if (isSubadmin && adminIds.length > 0) {
-      await notifyAdmins(
+    if (isSubadmin || isPublisherSubmission) {
+      await notifyAdminTeam(
         {
-          type: "product.upload",
-          title: "Product upload submitted",
-          body: `"${product.name}" has been submitted for review.`,
+          type: isPublisherSubmission ? "publisher.book.submitted" : "product.upload",
+          title: isPublisherSubmission ? "New publisher book submitted" : "Product upload submitted",
+          body: isPublisherSubmission ? `"${product.name}" was submitted by ${req.user.name || req.user.email} and is awaiting review.` : `"${product.name}" has been submitted for review.`,
           link: `/admin/products/edit/${product._id}`,
           data: {
             productId: product._id,
-            status: isSubadmin ? "pending" : "published",
+            status: "pending",
           },
         },
         adminIds,
       );
 
-      await sendPushToAdmins(adminIds, {
-        title: "Product upload submitted",
-        body: `"${product.name}" has been submitted for review.`,
+      await sendPushToAdminTeam({
+        title: isPublisherSubmission ? "New publisher book submitted" : "Product upload submitted",
+        body: isPublisherSubmission ? `"${product.name}" was submitted by ${req.user.name || req.user.email} and is awaiting review.` : `"${product.name}" has been submitted for review.`,
         link: `/admin/products/edit/${product._id}`,
         data: { productId: product._id, type: "product.upload" },
       }).catch((pushErr) => console.warn("Push to admins failed:", pushErr));
@@ -629,6 +631,11 @@ async function approveProduct(req, res) {
       product.status = "active";
       await product.save();
 
+      if (product.submittedBy) {
+        await createNotification({ userId: product.submittedBy, type: "publisher.book.approved", title: "Book approved", body: `"${product.name}" has been approved and is now visible in the RESYIN catalog.`, link: `/product/${product._id}`, data: { productId: product._id } });
+        await sendPushToUser(product.submittedBy, { title: "Book approved", body: `"${product.name}" is now live in the RESYIN catalog.`, link: `/product/${product._id}`, data: { productId: product._id, type: "publisher.book.approved" } }).catch(() => {});
+      }
+
       return res.json({ message: "Product approved", product });
     }
 
@@ -663,6 +670,11 @@ async function rejectProduct(req, res) {
       product.hidden = true;
       product.status = "inactive";
       await product.save();
+
+      if (product.submittedBy) {
+        await createNotification({ userId: product.submittedBy, type: "publisher.book.rejected", title: "Book needs revision", body: `"${product.name}" was not approved for publication. Please review the submission and contact RESYIN for guidance.`, link: "/publish-with-us", data: { productId: product._id } });
+        await sendPushToUser(product.submittedBy, { title: "Book needs revision", body: `"${product.name}" was not approved for publication.`, link: "/publish-with-us", data: { productId: product._id, type: "publisher.book.rejected" } }).catch(() => {});
+      }
 
       return res.json({ message: "Product approval rejected" });
     }

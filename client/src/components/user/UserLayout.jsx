@@ -46,9 +46,7 @@ export default function UserLayout({ children }) {
       icon: <ShoppingBag size={18} />,
     },
 
-    ...(user?.distributorStatus === "approved" ? [{ to: "/distributor", label: "Partner Dashboard", icon: <ShoppingBag size={18} /> }] : []),
-
-    ...(user?.distributorStatus !== "approved" && user?.distributorStatus !== "pending" ? [{ to: "/dashboard?distributor=apply", label: "Become a RESYIN Partner", icon: <Handshake size={18} /> }] : []),
+    { to: "/publish-with-us", label: "Publish with us", icon: <Handshake size={18} /> },
 
     {
       to: "/checkout",

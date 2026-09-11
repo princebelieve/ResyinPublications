@@ -31,7 +31,7 @@ router.post("/", protect, async (req, res) => {
       paymentMethod = "paystack", distributorCode = "", deliveryMethod = "delivery",
     } = req.body;
 
-    if (!["paystack", "cash_on_delivery", "distributor_transfer", "manual_bank_transfer"].includes(paymentMethod)) {
+    if (!["paystack", "cash_on_delivery", "distributor_transfer", "manual_bank_transfer", "publisher_direct_transfer"].includes(paymentMethod)) {
       return res.status(400).json({ message: "Choose a valid payment method." });
     }
     const selectedPickupLocation = String(pickupTransportCompany || "").trim() === "Other / specify a transport company or park"
@@ -67,6 +67,14 @@ router.post("/", protect, async (req, res) => {
     let subtotal = 0;
 
     const validCartItems = cart.items.filter((item) => item.productId);
+    const publisherIds = [...new Set(validCartItems.map((item) => item.productId.publisherId).filter(Boolean).map(String))];
+    if (publisherIds.length > 0 && paymentMethod !== "publisher_direct_transfer") return res.status(400).json({ message: "Publisher books use direct payment to the author. Choose the publisher payment option." });
+    if (paymentMethod === "publisher_direct_transfer" && publisherIds.length !== 1) return res.status(400).json({ message: "Direct author payment requires books from one publisher per order." });
+    let publisherPaymentAccount = null;
+    if (paymentMethod === "publisher_direct_transfer") {
+      publisherPaymentAccount = await User.findById(publisherIds[0]).select("publisherStatus publisherSubscriptionExpiresAt publisherAccountName publisherAccountNumber publisherBankName publisherPaymentInstructions").lean();
+      if (!publisherPaymentAccount || publisherPaymentAccount.publisherStatus !== "approved") return res.status(400).json({ message: "This publisher is not currently accepting direct payments." });
+    }
 
     if (validCartItems.length !== cart.items.length) {
       return res.status(400).json({
@@ -89,12 +97,8 @@ router.post("/", protect, async (req, res) => {
 
       const itemTotal = Number(edition.salePrice != null && edition.salePrice < edition.price ? edition.salePrice : edition.price) * item.quantity;
       const commissionRate = Math.min(100, Math.max(0, Number(product.platformCommissionRate ?? 10)));
-      const platformCommissionAmount = product.publisherId
-        ? Number((itemTotal * commissionRate / 100).toFixed(2))
-        : itemTotal;
-      const publisherEarnings = product.publisherId
-        ? Number((itemTotal - platformCommissionAmount).toFixed(2))
-        : 0;
+      const platformCommissionAmount = product.publisherId ? 0 : itemTotal;
+      const publisherEarnings = product.publisherId ? itemTotal : 0;
 
       subtotal += itemTotal;
       platformCommissionTotal += platformCommissionAmount;
@@ -114,7 +118,8 @@ router.post("/", protect, async (req, res) => {
         platformCommissionRate: commissionRate,
         platformCommissionAmount,
         publisherEarnings,
-        publisherPayoutStatus: product.publisherId ? "pending" : "not_applicable",
+        publisherPayoutStatus: "not_applicable",
+        publisherPaymentStatus: product.publisherId && paymentMethod === "publisher_direct_transfer" ? "pending_confirmation" : "not_applicable",
       };
     });
 
@@ -199,6 +204,15 @@ router.post("/", protect, async (req, res) => {
       order.paymentInstructions = "When the delivery agent arrives, make an online transfer to the official RESYIN Publications account sent to your WhatsApp or phone number. The agent confirms payment before handing over the order and does not collect cash.";
       await order.save();
     }
+    if (paymentMethod === "publisher_direct_transfer") {
+      order.paymentInstructions = `Transfer ₦${totalAmount.toLocaleString()} directly to ${publisherPaymentAccount.publisherAccountName} · ${publisherPaymentAccount.publisherAccountNumber} · ${publisherPaymentAccount.publisherBankName}${publisherPaymentAccount.publisherPaymentInstructions ? `. ${publisherPaymentAccount.publisherPaymentInstructions}` : ""}. The publisher must confirm your payment before digital download or fulfilment.`;
+      order.manualTransferStatus = "pending_verification";
+      await order.save();
+      for (const publisherId of publisherIds) {
+        const publisherNotification = await createNotification({ userId: publisherId, type: "publisher.order.payment_pending", title: "Customer payment awaiting confirmation", body: `A customer placed order #${order._id.toString().slice(-6).toUpperCase()} for your book. Confirm the transfer after checking your account.`, link: "/dashboard", data: { orderId: order._id } });
+        if (publisherNotification) await sendPushToUser(publisherId, { title: publisherNotification.title, body: publisherNotification.body, link: publisherNotification.link, data: publisherNotification.data }).catch(() => {});
+      }
+    }
 
     // Create notification for user
     const orderNotif = await createNotification({
@@ -209,6 +223,8 @@ router.post("/", protect, async (req, res) => {
         ? `Order #${order._id.toString().slice(-6).toUpperCase()} is pay on delivery. Transfer to the official RESYIN account when the agent arrives; payment must be confirmed before handover.`
         : paymentMethod === "manual_bank_transfer"
           ? `Your order #${order._id.toString().slice(-6).toUpperCase()} is awaiting bank-transfer verification.`
+        : paymentMethod === "publisher_direct_transfer"
+          ? `Your order #${order._id.toString().slice(-6).toUpperCase()} is awaiting payment confirmation from the publisher.`
         : `Payment is incomplete for order #${order._id.toString().slice(-6).toUpperCase()}. Complete payment before delivery can begin.`,
       link: `/dashboard`,
       data: { orderId: order._id },
@@ -229,7 +245,7 @@ router.post("/", protect, async (req, res) => {
       });
     }
 
-    if (["cash_on_delivery", "distributor_transfer", "manual_bank_transfer"].includes(paymentMethod)) {
+    if (["cash_on_delivery", "distributor_transfer", "manual_bank_transfer", "publisher_direct_transfer"].includes(paymentMethod)) {
       await Cart.findOneAndUpdate({ userId }, { items: [] });
       return res.json({
         checkoutType: paymentMethod,

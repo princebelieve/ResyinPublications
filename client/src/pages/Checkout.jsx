@@ -7,6 +7,9 @@ const COUNTRY_NAMES = new Intl.DisplayNames(["en"], { type: "region" });
 
 export default function Checkout() {
   const { cart, subtotal, clearCart, removeFromCart } = useCart();
+  const publisherIds = [...new Set(cart.map((item) => item.publisherId).filter(Boolean))];
+  const hasPublisherBooks = publisherIds.length > 0;
+  const canPayPublisherDirectly = publisherIds.length === 1 && cart.every((item) => item.publisherId);
   const [shippingFee, setShippingFee] = useState(0);
   const [shippingInfo, setShippingInfo] = useState(null);
   const [shippingDestinations, setShippingDestinations] = useState(["NG"]);
@@ -28,11 +31,17 @@ export default function Checkout() {
     state: "",
     country: "NG",
     notes: "",
-    paymentMethod: "paystack",
+    paymentMethod: hasPublisherBooks ? "publisher_direct_transfer" : "paystack",
     deliveryMethod: "delivery",
     pickupTransportCompany: "",
     pickupOtherLocation: "",
   });
+
+  useEffect(() => {
+    if (hasPublisherBooks && canPayPublisherDirectly) {
+      setForm((current) => ({ ...current, paymentMethod: "publisher_direct_transfer" }));
+    }
+  }, [hasPublisherBooks, canPayPublisherDirectly]);
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -129,7 +138,7 @@ export default function Checkout() {
         distributorCode: sessionStorage.getItem("activeDistributorCode") || "",
       });
 
-      if (["cash_on_delivery", "distributor_transfer", "manual_bank_transfer"].includes(response.checkoutType)) {
+      if (["cash_on_delivery", "distributor_transfer", "manual_bank_transfer", "publisher_direct_transfer"].includes(response.checkoutType)) {
         await clearCart();
         window.location.href = response.confirmation_url;
         return;
@@ -221,10 +230,11 @@ export default function Checkout() {
 
               <fieldset className="payment-methods">
                 <legend>Choose a payment method</legend>
-                <label className="payment-method-option">
+                {!hasPublisherBooks && <label className="payment-method-option">
                   <input type="radio" name="paymentMethod" value="paystack" checked={form.paymentMethod === "paystack"} onChange={handleChange} />
                   <span><strong>Pay online securely</strong><small>Use card, bank transfer, or USSD through Paystack.</small></span>
-                </label>
+                </label>}
+                {canPayPublisherDirectly && <label className="payment-method-option"><input type="radio" name="paymentMethod" value="publisher_direct_transfer" checked={form.paymentMethod === "publisher_direct_transfer"} onChange={handleChange} /><span><strong>Pay the publisher directly</strong><small>Transfer to the publisher's verified account. The book becomes downloadable after the publisher confirms payment.</small></span></label>}
                 {distributor && <label className="payment-method-option"><input type="radio" name="paymentMethod" value="distributor_transfer" checked={form.paymentMethod === "distributor_transfer"} onChange={handleChange} disabled={!distributor.distributorBankName || !distributor.distributorAccountNumber} /><span><strong>Transfer to {distributor.name}</strong><small>{distributor.distributorAccountName} · {distributor.distributorAccountNumber} · {distributor.distributorBankName}</small></span></label>}
                 {!distributor && storePaymentSettings?.manualTransferEnabled && <label className="payment-method-option"><input type="radio" name="paymentMethod" value="manual_bank_transfer" checked={form.paymentMethod === "manual_bank_transfer"} onChange={handleChange} /><span><strong>Transfer directly to RESYIN</strong><small>{storePaymentSettings.accountName} · {storePaymentSettings.accountNumber} · {storePaymentSettings.bankName}{storePaymentSettings.transferInstructions ? ` — ${storePaymentSettings.transferInstructions}` : ""}</small></span></label>}
                 <label className="payment-method-option"><input type="radio" name="paymentMethod" value="cash_on_delivery" checked={form.paymentMethod === "cash_on_delivery"} onChange={handleChange} /><span><strong>Pay on delivery by transfer</strong><small>When the agent arrives, transfer to the official RESYIN account sent to your WhatsApp or phone. The agent confirms payment before handing over the order; no cash is collected.</small></span></label>
@@ -237,7 +247,9 @@ export default function Checkout() {
               >
                 {checkoutLoading
                   ? "Processing…"
-                  : form.paymentMethod === "distributor_transfer"
+                    : form.paymentMethod === "publisher_direct_transfer"
+                      ? "Place Direct Publisher Payment Order"
+                      : form.paymentMethod === "distributor_transfer"
                       ? "Place Transfer Order"
                       : form.paymentMethod === "cash_on_delivery"
                         ? "Place Pay-on-Delivery Order"

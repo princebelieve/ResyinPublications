@@ -647,6 +647,47 @@ button,input,select,textarea { font-family:inherit; }
 	color: #a84420;
 }
 
+.book-upload-format {
+	display: grid;
+	grid-template-columns: 1.1fr 1.2fr repeat(6, minmax(80px, 1fr)) 36px;
+	gap: 8px;
+	margin-bottom: 10px;
+}
+
+.book-upload-format input,
+.book-upload-format select {
+	min-width: 0;
+	border: 1px solid #cfc1b3;
+	border-radius: 0;
+	background: #fff;
+}
+
+.book-upload-format > button {
+	display: grid;
+	place-items: center;
+	padding: 0;
+	border: 1px solid #cfc1b3;
+	border-radius: 0;
+	background: transparent;
+	color: #a84420;
+}
+
+.book-upload-files {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 14px;
+}
+
+.book-upload-files label,
+.book-upload-form > .wizard-card > label {
+	display: grid;
+	gap: 6px;
+	margin-top: 12px;
+	color: #4e4037;
+	font-size: .82rem;
+	font-weight: 700;
+}
+
 .book-editions-panel form > button {
 	margin-top: 8px;
 }
@@ -660,6 +701,16 @@ button,input,select,textarea { font-family:inherit; }
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		padding-bottom: 14px;
 		border-bottom: 1px solid #cfc1b3;
+	}
+
+	.book-upload-format {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		padding-bottom: 14px;
+		border-bottom: 1px solid #cfc1b3;
+	}
+
+	.book-upload-files {
+		grid-template-columns: 1fr;
 	}
 }
 

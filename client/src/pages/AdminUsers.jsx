@@ -100,6 +100,13 @@ export default function AdminUsers() {
     } catch (err) { console.error(err); }
   }
 
+  async function changePublisherStatus(user, publisherStatus) {
+    try {
+      const response = await updateAdminUser(user._id, { publisherStatus }, token);
+      setUsers((prev) => prev.map((u) => u._id === user._id ? { ...u, ...response.user } : u));
+    } catch (err) { console.error(err); }
+  }
+
   function handleSendNotification(userId) {
     setNotificationState({
       userId: userId,
@@ -197,6 +204,21 @@ export default function AdminUsers() {
                   {u.distributorDeliveryCoverage && <p><b>Delivery area:</b> {u.distributorDeliveryCoverage}</p>}
                   <p><b>Payment account:</b> {u.distributorBankName || "—"} · {u.distributorAccountName || "—"} · {u.distributorAccountNumber || "—"}</p>
                   {u.distributorApplicationNote && <p><b>Note:</b> {u.distributorApplicationNote}</p>}
+                </div>
+              )}
+              <div style={{ marginBottom: 12 }}>
+                <strong>Publisher:</strong>{" "}
+                <select value={u.publisherStatus || "none"} onChange={(e) => changePublisherStatus(u, e.target.value)} style={{ marginLeft: 8, padding: 4, borderRadius: 4, border: "1px solid #ccc" }}>
+                  <option value="none">Not a publisher</option><option value="pending">Subscription pending</option><option value="approved">Approved publisher</option><option value="suspended">Suspended</option>
+                </select>
+                {u.publisherSubscriptionExpiresAt && <small style={{ display: "block", marginTop: 4 }}>Subscription expires: {formatDate(u.publisherSubscriptionExpiresAt)}</small>}
+              </div>
+              {u.publisherStatus === "pending" && (
+                <div className="admin-distributor-application">
+                  <strong>Publisher application</strong>
+                  <p><b>Payment account:</b> {u.publisherBankName || "—"} · {u.publisherAccountName || "—"} · {u.publisherAccountNumber || "—"}</p>
+                  {u.publisherApplicationNote && <p><b>Note:</b> {u.publisherApplicationNote}</p>}
+                  <p className="muted">Verify the annual platform subscription, then select Approved publisher.</p>
                 </div>
               )}
               <p>

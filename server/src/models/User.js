@@ -49,6 +49,19 @@ const userSchema = new mongoose.Schema(
     distributorApplicationNote: { type: String, default: "" },
     distributorDeliveryCoverage: { type: String, default: "" },
 
+    publisherStatus: {
+      type: String,
+      enum: ["none", "pending", "approved", "suspended"],
+      default: "none",
+    },
+    publisherSubscriptionExpiresAt: { type: Date, default: null },
+    publisherBankName: { type: String, default: "" },
+    publisherBankCode: { type: String, default: "" },
+    publisherAccountName: { type: String, default: "" },
+    publisherAccountNumber: { type: String, default: "" },
+    publisherPaymentInstructions: { type: String, default: "" },
+    publisherApplicationNote: { type: String, default: "" },
+
     phone: {
       type: String,
       default: "",

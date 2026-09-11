@@ -63,7 +63,7 @@ export default function RelatedProductCarousel({ products = [] }) {
             <h2>{item.name}</h2>
             <p>{item.shortDescription}</p>
             {isPublisherPromo ? (
-              <Link to="/contact" className="resyin-advert-link">
+                <Link to="/publish-with-us" className="resyin-advert-link">
                 Publish with us <ArrowRight size={16} />
               </Link>
             ) : (

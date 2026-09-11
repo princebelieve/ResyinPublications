@@ -46,8 +46,10 @@ router.get("/:id/download/:format", protect, async (req, res) => {
 
     const order = await Order.findOne({
       userId: String(req.user.id),
-      paymentStatus: "paid",
-      items: { $elemMatch: { productId: String(product._id) } },
+      $or: [
+        { paymentStatus: "paid", items: { $elemMatch: { productId: String(product._id), publisherId: "" } } },
+        { items: { $elemMatch: { productId: String(product._id), publisherId: { $ne: "" }, publisherPaymentStatus: "confirmed" } } },
+      ],
     }).select("_id").sort({ paidAt: -1, createdAt: -1 }).lean();
     if (!order) {
       return res.status(403).json({ message: "Complete payment for this book before downloading it." });

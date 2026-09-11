@@ -45,17 +45,17 @@ export default function AdminPublisherSubscriptionSettings() {
 
   return (
     <div className="page">
-      <h1>Author Subscription Settings</h1>
-      <p className="muted">Configure the annual listing subscription for external authors. Settings are inactive until enabled.</p>
+      <h1>Publisher Submission Settings</h1>
+      <p className="muted">Control how external authors and publishers submit books for review and listing on RESYIN.</p>
       <form className="form" onSubmit={save}>
-        <label className="wizard-checkbox"><input type="checkbox" name="enabled" checked={settings.enabled} onChange={change} /><span>Enable external publisher subscriptions</span></label>
-        <label>Annual fee<input required={settings.enabled} type="number" min="0" name="annualFee" value={settings.annualFee} onChange={change} /></label>
+        <label className="wizard-checkbox"><input type="checkbox" name="enabled" checked={settings.enabled} onChange={change} /><span>Enable publisher submissions</span></label>
+        <label>Publisher listing fee<input required={settings.enabled} type="number" min="0" name="annualFee" value={settings.annualFee} onChange={change} /></label>
         <label>Currency<input name="currency" value={settings.currency} onChange={change} maxLength="3" /></label>
-        <label>Subscription duration in days<input type="number" min="1" name="subscriptionDays" value={settings.subscriptionDays} onChange={change} /></label>
+        <label>Listing period in days<input type="number" min="1" name="subscriptionDays" value={settings.subscriptionDays} onChange={change} /></label>
         <label>Grace period in days<input type="number" min="0" name="gracePeriodDays" value={settings.gracePeriodDays} onChange={change} /></label>
         <label className="wizard-checkbox"><input type="checkbox" name="requireAdminApproval" checked={settings.requireAdminApproval} onChange={change} /><span>Require admin approval before an author is listed</span></label>
         <label className="wizard-checkbox"><input type="checkbox" name="autoRenewEnabled" checked={settings.autoRenewEnabled} onChange={change} /><span>Allow auto-renewal policy later</span></label>
-        <label>Author terms<textarea name="authorTerms" rows="7" value={settings.authorTerms} onChange={change} placeholder="Terms shown to authors before subscribing" /></label>
+        <label>Publisher terms<textarea name="authorTerms" rows="7" value={settings.authorTerms} onChange={change} placeholder="Terms shown to authors and publishers before submitting a book" /></label>
         <button className="primary" type="submit">Save subscription settings</button>
         {message && <p className="inline-toast success" role="status">{message}</p>}
       </form>

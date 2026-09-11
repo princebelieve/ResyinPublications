@@ -30,6 +30,7 @@ const distributorRoutes = require("./routes/distributor.routes");
 const adminDistributorRoutes = require("./routes/admin.distributor.routes");
 const paymentSettingsRoutes = require("./routes/payment.settings.routes");
 const publisherSubscriptionSettingsRoutes = require("./routes/publisher.subscription.settings.routes");
+const publisherRoutes = require("./routes/publisher.routes");
 const transportCompanyRoutes = require("./routes/transportCompany.routes");
 const { runUserRetentionCleanup } = require("./routes/admin.user.routes");
 
@@ -76,6 +77,7 @@ app.use("/api/distributor", distributorRoutes);
 app.use("/api/admin/distributors", adminDistributorRoutes);
 app.use("/api/payment-settings", paymentSettingsRoutes);
 app.use("/api/publisher-subscription-settings", publisherSubscriptionSettingsRoutes);
+app.use("/api/publishers", publisherRoutes);
 app.use("/api/transport-companies", transportCompanyRoutes);
 
 // DYNAMIC SITEMAP - serves at root level for Google

@@ -11,13 +11,12 @@ const purchaseSteps = [
   ["6", "Track your order", "Use My Orders in your dashboard to see payment and fulfilment updates after placing your order."],
 ];
 
-const distributorSteps = [
-  ["Apply", "Open your dashboard and choose Apply to become a distributor. Enter your business, phone, pickup address, bank account, and delivery details."],
-  ["Wait for approval", "An RESYIN administrator reviews your application. Your distributor dashboard is available only after approval."],
-  ["Buy stock", "Use the Distributor Dashboard wholesale catalogue to buy eligible products at distributor prices. Approved payment adds the items to your distributor stock."],
-  ["Share your shop", "Your dashboard provides a personal shop link. Customers who use it see products you have in stock and your fulfilment options."],
-  ["Fulfil customer orders", "Set your account details, pickup address, and delivery availability. Customers can pay by transfer to your listed account where enabled."],
-  ["Keep stock accurate", "Record direct sales in your dashboard. Customer orders from your distributor shop also reduce your available stock after payment confirmation."],
+const publisherSteps = [
+  ["Prepare your book", "Gather the title, author and publisher details, description, cover image, ISBN, and the formats you want to offer."],
+  ["Upload the formats", "Submit paperback, hardcover, PDF, or EPUB editions. Each format can have its own price, stock, ISBN, and SKU."],
+  ["Submit for review", "RESYIN keeps new publisher submissions hidden while an administrator checks the book information and files."],
+  ["Admin approval", "Once approved, the book becomes part of the RESYIN catalog and can be discovered by readers."],
+  ["Reach readers", "Customers can purchase the physical editions or download the PDF/EPUB after a paid order is confirmed."],
 ];
 
 export default function HowToUse() {
@@ -28,8 +27,8 @@ export default function HowToUse() {
         <section className="how-to-use-hero">
           <div className="container">
             <span className="eyebrow">RESYIN APP GUIDE</span>
-            <h1>Shop with confidence. Grow as a distributor.</h1>
-            <p>A straightforward guide to buying products, choosing fulfilment and payment, and running a RESYIN distributor shop.</p>
+            <h1>Shop with confidence. Publish with RESYIN.</h1>
+            <p>A straightforward guide to buying books and submitting paperback, hardcover, PDF, or EPUB editions for review.</p>
             <div className="easy-actions">
               <Link className="easy-btn easy-btn-primary" to="/collection">Start shopping</Link>
               <Link className="easy-btn easy-btn-light" to="/dashboard">Open my dashboard</Link>
@@ -58,7 +57,7 @@ export default function HowToUse() {
               <p><strong>Pickup:</strong> Select pickup to skip shipping charges. The checkout page shows the collection location after your order is confirmed.</p>
               <p><strong>Online payment:</strong> Complete payment securely through Paystack.</p>
               <p><strong>Pay on delivery / pickup:</strong> Available according to the checkout conditions shown for your order.</p>
-              <p><strong>Distributor transfer:</strong> When you use a distributor’s link, their verified account details appear as an available payment option.</p>
+              <p><strong>Digital books:</strong> PDF and EPUB downloads become available after a paid order is confirmed.</p>
             </div>
           </div>
         </section>
@@ -66,14 +65,14 @@ export default function HowToUse() {
         <section className="section">
           <div className="container">
             <div className="how-to-use-heading">
-              <span className="eyebrow">FOR DISTRIBUTORS</span>
-              <h2>How the distributor role works</h2>
-              <p>Distributors buy their own stock at the approved distributor price, then serve customers through a controlled personal shop link.</p>
+              <span className="eyebrow">FOR AUTHORS &amp; PUBLISHERS</span>
+              <h2>How publishing with RESYIN works</h2>
+              <p>Submit a complete book package, wait for review, and make approved editions available to readers.</p>
             </div>
             <div className="how-to-use-steps distributor-how-to-steps">
-              {distributorSteps.map(([title, description], index) => <article className="how-to-use-step content-card" key={title}><span>{index + 1}</span><div><h3>{title}</h3><p>{description}</p></div></article>)}
+              {publisherSteps.map(([title, description], index) => <article className="how-to-use-step content-card" key={title}><span>{index + 1}</span><div><h3>{title}</h3><p>{description}</p></div></article>)}
             </div>
-            <aside className="how-to-use-note"><strong>Important:</strong> Distributor stock and regular RESYIN stock are separate. Only products in a distributor’s available stock appear through that distributor’s personal link.</aside>
+            <aside className="how-to-use-note"><strong>Important:</strong> New publisher books remain hidden until an administrator approves the submission.</aside>
           </div>
         </section>
 

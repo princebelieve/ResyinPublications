@@ -51,6 +51,7 @@ export function CartProvider({ children }) {
             format: item.editionKey || "paperback",
             deliveryCategory: productObj.deliveryCategory || "",
             category: productObj.category || "",
+            publisherId: productObj.publisherId || "",
           };
         })
         .filter(Boolean);

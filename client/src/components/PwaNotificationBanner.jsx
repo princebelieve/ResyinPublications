@@ -9,16 +9,25 @@ export default function PwaNotificationBanner() {
   useEffect(() => {
     // Only show on browsers that support push notifications
     const supportsPush =
-      "serviceWorker" in navigator && "PushManager" in window;
+      "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
 
     if (!supportsPush) {
       return;
     }
 
     // Check if permission is already granted
+    const syncSubscription = () => {
+      if (Notification.permission === "granted") ensurePushSubscription();
+    };
+
     if (Notification.permission === "granted") {
       ensurePushSubscription();
-      return;
+      window.addEventListener("online", syncSubscription);
+      document.addEventListener("visibilitychange", syncSubscription);
+      return () => {
+        window.removeEventListener("online", syncSubscription);
+        document.removeEventListener("visibilitychange", syncSubscription);
+      };
     }
 
     // Check if user previously dismissed the banner
@@ -31,6 +40,8 @@ export default function PwaNotificationBanner() {
     if (Notification.permission !== "denied") {
       setShowBanner(true);
     }
+
+    return undefined;
   }, []);
 
   const handleSubscribe = async () => {

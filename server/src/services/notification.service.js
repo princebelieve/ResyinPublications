@@ -1,4 +1,5 @@
 const Notification = require("../models/Notification");
+const User = require("../models/User");
 
 /**
  * Create a notification for a user
@@ -104,9 +105,20 @@ async function notifyAdmins(notificationPayload, adminIds) {
   }
 }
 
+async function notifyAdminTeam(notificationPayload) {
+  try {
+    const staff = await User.find({ role: { $in: ["admin", "subadmin"] }, isSuspended: { $ne: true }, isDeleted: { $ne: true } }).select("_id").lean();
+    return await createNotificationsForUsers(staff.map((user) => user._id), notificationPayload);
+  } catch (error) {
+    console.error("Error notifying admin team:", error);
+    return [];
+  }
+}
+
 module.exports = {
   createNotification,
   countUnreadNotifications,
   createNotificationsForUsers,
   notifyAdmins,
+  notifyAdminTeam,
 };

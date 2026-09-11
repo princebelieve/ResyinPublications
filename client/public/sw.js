@@ -68,6 +68,7 @@ self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
   const link = event.notification.data?.link || "/";
+  const targetUrl = new URL(link, self.location.origin).href;
 
   event.waitUntil(
     self.clients
@@ -76,14 +77,14 @@ self.addEventListener("notificationclick", (event) => {
         // Check if there's already a window/tab with the target URL
         for (let i = 0; i < windowClients.length; i++) {
           const client = windowClients[i];
-          if (client.url === link && "focus" in client) {
+          if (client.url === targetUrl && "focus" in client) {
             return client.focus();
           }
         }
 
         // If not, open a new window
         if (self.clients.openWindow) {
-          return self.clients.openWindow(link);
+          return self.clients.openWindow(targetUrl);
         }
       }),
   );

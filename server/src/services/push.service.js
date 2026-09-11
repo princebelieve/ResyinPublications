@@ -6,11 +6,11 @@
 
 const { isVapidConfigured, vapid } = require("../config/vapid");
 const PushSubscription = require("../models/PushSubscription");
+const User = require("../models/User");
 const { countUnreadNotifications } = require("./notification.service");
 
 let webpush;
 
-// Initialize web-push if VAPID keys are configured
 if (isVapidConfigured()) {
   try {
     webpush = require("web-push");
@@ -150,6 +150,20 @@ async function sendPushToAdmins(adminIds, payload) {
   return sendPushToUsers(adminIds, payload);
 }
 
+async function sendPushToAdminTeam(payload) {
+  const staff = await User.find({ role: { $in: ["admin", "subadmin"] }, isSuspended: { $ne: true }, isDeleted: { $ne: true } }).select("_id").lean();
+  return sendPushToUsers(staff.map((user) => user._id), payload);
+}
+  /**
+   * Send push notification to all subadmins
+   * @param {Array<string>} subadminIds - Array of subadmin IDs
+   * @param {Object} payload - Notification payload
+   * @returns {Promise<Object>} Result
+   */
+  async function sendPushToSubadmins(subadminIds, payload) {
+    return sendPushToUsers(subadminIds, payload);
+  }
+
 /**
  * Check if push notifications are available
  * @returns {boolean} True if web-push is configured and installed
@@ -162,5 +176,6 @@ module.exports = {
   sendPushToUser,
   sendPushToUsers,
   sendPushToAdmins,
+  sendPushToAdminTeam,
   isPushAvailable,
 };

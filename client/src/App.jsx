@@ -11,7 +11,9 @@ import ProductDetails from "./pages/ProductDetails";
 import Success from "./pages/Success";
 import Cancel from "./pages/Cancel";
 import About from "./pages/About";
+import AuthorProfile from "./pages/AuthorProfile";
 import Contact from "./pages/Contact";
+import PublishWithUs from "./pages/PublishWithUs";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Dashboard from "./pages/Dashboard";
@@ -200,7 +202,9 @@ export default function App() {
             <Route path="/notifications/:id" element={<RequireAuth><NotificationDetails /></RequireAuth>} />
 
             <Route path="/about" element={<About />} />
+            <Route path="/author/johnson-egonmwan" element={<AuthorProfile />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/publish-with-us" element={<PublishWithUs />} />
             <Route path="/support" element={<SupportGuide />} />
             <Route path="/how-to-use" element={<HowToUse />} />
             <Route path="/testimonials" element={<Testimonials />} />

@@ -1,7 +1,7 @@
 //client/src/pages/Dashboard.jsx
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { applyForDistributor, completePendingPayment, getMyOrders, getProfile, getNigerianBanks, resolveNigerianAccount } from "../services/api";
+import { applyForDistributor, completePendingPayment, confirmPublisherOrderPayment, getMyOrders, getPendingPublisherOrders, getProfile, getNigerianBanks, resolveNigerianAccount } from "../services/api";
 import { formatDate } from "../utils/formatDate";
 import useAuth from "../context/AuthContext";
 import UserLayout from "../components/user/UserLayout";
@@ -10,6 +10,7 @@ import BankSelect from "../components/BankSelect";
 export default function Dashboard() {
   const [searchParams] = useSearchParams();
   const [orders, setOrders] = useState([]);
+  const [publisherOrders, setPublisherOrders] = useState([]);
   const [user, setUser] = useState(null);
   const { token, setUser: setAuthenticatedUser } = useAuth();
   const [distributorMessage, setDistributorMessage] = useState("");
@@ -49,6 +50,8 @@ export default function Dashboard() {
 
         const ordersData = await getMyOrders(token);
         setOrders(ordersData);
+        const publisherOrderData = await getPendingPublisherOrders(token).catch(() => []);
+        setPublisherOrders(Array.isArray(publisherOrderData) ? publisherOrderData : []);
 
         const bankData = await getNigerianBanks();
         setBanks(Array.isArray(bankData) ? bankData : bankData.banks || []);
@@ -148,6 +151,15 @@ export default function Dashboard() {
     }
   }
 
+  async function confirmPublisherPayment(orderId) {
+    try {
+      await confirmPublisherOrderPayment(orderId, token);
+      setPublisherOrders((current) => current.filter((order) => order._id !== orderId));
+    } catch (error) {
+      setDistributorMessage(error.message || "Unable to confirm this customer payment.");
+    }
+  }
+
   return (
     <UserLayout>
       <div className="page">
@@ -205,9 +217,10 @@ export default function Dashboard() {
           <button onClick={() => (window.location.href = "/profile")}>
             Edit Profile
           </button>
-          {user?.distributorStatus === "approved" ? <button onClick={() => (window.location.href = "/distributor")}>Open Distributor Dashboard</button> : user?.distributorStatus === "pending" ? <button disabled>Distributor application pending</button> : <button onClick={() => showDistributorForm ? setShowDistributorForm(false) : setShowDistributorForm(true)}>{showDistributorForm ? "Close distributor application" : "Apply to become a distributor"}</button>}
+          <button onClick={() => (window.location.href = "/publish-with-us")}>Publish a book with RESYIN</button>
         </div>
         {distributorMessage && <p className="inline-toast success">{distributorMessage}</p>}
+        {publisherOrders.length > 0 && <section className="content-card publisher-orders"><h2>Publisher payment confirmations</h2><p className="muted">Confirm each direct payment after checking your bank account. Digital downloads and fulfilment remain locked until confirmation.</p>{publisherOrders.map((order) => <article key={order._id}><strong>Order #{order._id.slice(-6).toUpperCase()}</strong><span>{order.items.filter((item) => item.publisherId === String(user?._id)).map((item) => `${item.quantity} × ${item.name}`).join(", ")}</span><span>{order.paymentInstructions}</span><button type="button" className="primary" onClick={() => confirmPublisherPayment(order._id)}>Confirm customer payment</button></article>)}</section>}
         {user?.distributorStatus === "pending" && <p className="muted">Your application has been submitted. An RESYIN administrator must approve it before you can access the Distributor Dashboard.</p>}
         {showDistributorForm && user?.distributorStatus !== "pending" && (
           <section ref={distributorFormRef} className="content-card distributor-application">

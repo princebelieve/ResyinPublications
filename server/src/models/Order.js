@@ -42,6 +42,11 @@ const orderItemSchema = new mongoose.Schema(
       enum: ["not_applicable", "pending", "paid", "held"],
       default: "not_applicable",
     },
+    publisherPaymentStatus: {
+      type: String,
+      enum: ["not_applicable", "pending_confirmation", "confirmed", "rejected"],
+      default: "not_applicable",
+    },
   },
   { _id: false },
 );
@@ -121,7 +126,7 @@ const orderSchema = new mongoose.Schema(
 
     paymentMethod: {
       type: String,
-      enum: ["paystack", "cash_on_delivery", "distributor_transfer", "manual_bank_transfer"],
+      enum: ["paystack", "cash_on_delivery", "distributor_transfer", "manual_bank_transfer", "publisher_direct_transfer"],
       default: "paystack",
     },
 

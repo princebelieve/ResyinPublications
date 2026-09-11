@@ -13,7 +13,6 @@ import {
   Package,
   ShoppingCart,
   BarChart3,
-  UsersRound,
   AlertTriangle,
   Truck,
   MapPinned,
@@ -78,12 +77,6 @@ export default function AdminLayout({ children }) {
     },
 
     {
-      to: "/admin/distributors",
-      label: "Partner Inventory",
-      icon: <UsersRound size={18} />,
-    },
-
-    {
       to: "/admin/sales",
       label: "Book Sales",
       icon: <BarChart3 size={18} />,
@@ -121,7 +114,7 @@ export default function AdminLayout({ children }) {
 
     {
       to: "/admin/publisher-subscription-settings",
-      label: "Author Subscriptions",
+      label: "Publisher Settings",
       icon: <WalletCards size={18} />,
     },
 
@@ -155,15 +148,11 @@ export default function AdminLayout({ children }) {
       icon: <User size={18} />,
     },
 
-    ...(user?.distributorStatus === "approved" ? [{
-      to: "/distributor",
-      label: "Partner Dashboard",
+    {
+      to: "/publish-with-us",
+      label: "Publish with us",
       icon: <Handshake size={18} />,
-    }] : user?.distributorStatus !== "pending" ? [{
-      to: "/dashboard?distributor=apply",
-      label: "Become a RESYIN Partner",
-      icon: <Handshake size={18} />,
-    }] : []),
+    },
 
     {
       to: "/profile",

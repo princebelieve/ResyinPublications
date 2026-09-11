@@ -50,7 +50,7 @@ async function runUserRetentionCleanup() {
 router.get("/", protect, adminOnly, async (req, res) => {
   try {
     const users = await User.find()
-      .select("name email phone role distributorStatus distributorCode distributorBusinessName distributorApplicationNote distributorDeliveryCoverage distributorBankName distributorAccountName distributorAccountNumber distributorPickupAddress isSuspended isDeleted deletionRequestedAt deletionRequestReason createdAt")
+      .select("name email phone role distributorStatus distributorCode distributorBusinessName distributorApplicationNote distributorDeliveryCoverage distributorBankName distributorAccountName distributorAccountNumber distributorPickupAddress publisherStatus publisherSubscriptionExpiresAt publisherBankName publisherAccountName publisherAccountNumber publisherApplicationNote isSuspended isDeleted deletionRequestedAt deletionRequestReason createdAt")
       .sort({ createdAt: -1 });
 
     res.json(users);
@@ -63,7 +63,7 @@ router.get("/", protect, adminOnly, async (req, res) => {
 // PUT /api/admin/users/:id - update suspend / soft-delete flags and role
 router.put("/:id", protect, adminOnly, async (req, res) => {
   try {
-    const { isSuspended, isDeleted, role, distributorStatus, permanentDelete, deleteImmediately } = req.body;
+    const { isSuspended, isDeleted, role, distributorStatus, publisherStatus, permanentDelete, deleteImmediately } = req.body;
 
     const user = await User.findById(req.params.id);
 
@@ -72,6 +72,7 @@ router.put("/:id", protect, adminOnly, async (req, res) => {
     }
 
     const wasDistributorApproved = user.distributorStatus === "approved";
+    const previousPublisherStatus = user.publisherStatus;
 
     if (permanentDelete || deleteImmediately) {
       const result = await permanentDeleteUser(user._id);
@@ -112,6 +113,20 @@ router.put("/:id", protect, adminOnly, async (req, res) => {
       if (distributorStatus === "approved" && !user.distributorCode) user.distributorCode = `ELD-${String(user._id).slice(-6).toUpperCase()}`;
     }
 
+    if (publisherStatus) {
+      const validStatuses = ["none", "pending", "approved", "suspended"];
+      if (!validStatuses.includes(publisherStatus)) return res.status(400).json({ message: "Invalid publisher status" });
+      user.publisherStatus = publisherStatus;
+      if (publisherStatus === "approved") {
+        const PublisherSubscriptionSettings = require("../models/PublisherSubscriptionSettings");
+        const settings = await PublisherSubscriptionSettings.findOne({ key: "default" }).lean();
+        const days = Number(settings?.subscriptionDays || 365);
+        user.publisherSubscriptionExpiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+      } else if (publisherStatus !== "approved") {
+        user.publisherSubscriptionExpiresAt = null;
+      }
+    }
+
     await user.save();
 
     if (user.distributorStatus === "approved" && !wasDistributorApproved) {
@@ -133,6 +148,19 @@ router.put("/:id", protect, adminOnly, async (req, res) => {
       }
     }
 
+    if (publisherStatus && publisherStatus !== previousPublisherStatus) {
+      const approved = publisherStatus === "approved";
+      const notification = await createNotification({
+        userId: user._id,
+        type: approved ? "publisher.subscription.approved" : "publisher.subscription.status",
+        title: approved ? "Publisher subscription approved" : "Publisher status updated",
+        body: approved ? `Your publisher subscription is approved until ${user.publisherSubscriptionExpiresAt.toISOString().slice(0, 10)}. You can now submit books.` : `Your publisher status is now ${publisherStatus}.`,
+        link: "/publish-with-us",
+        data: { publisherStatus, publisherSubscriptionExpiresAt: user.publisherSubscriptionExpiresAt },
+      });
+      if (notification) await sendPushToUser(user._id, { title: notification.title, body: notification.body, link: notification.link, data: notification.data }).catch(() => {});
+    }
+
     res.json({
       message: "User updated",
       user: {
@@ -142,6 +170,8 @@ router.put("/:id", protect, adminOnly, async (req, res) => {
         role: user.role,
         distributorStatus: user.distributorStatus,
         distributorCode: user.distributorCode,
+        publisherStatus: user.publisherStatus,
+        publisherSubscriptionExpiresAt: user.publisherSubscriptionExpiresAt,
         isSuspended: user.isSuspended,
         isDeleted: user.isDeleted,
       },

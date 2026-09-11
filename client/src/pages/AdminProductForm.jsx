@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import ProductForm from "../components/ProductForm";
+import BookUploadForm from "../components/BookUploadForm";
 import DigitalBookFilesForm from "../components/DigitalBookFilesForm";
 import BookEditionsForm from "../components/BookEditionsForm";
 import useAuth from "../context/AuthContext";
@@ -42,11 +43,11 @@ export default function AdminProductForm() {
   async function handleSubmit(formData) {
     if (editingProduct) {
       await updateProductApi(editingProduct._id, formData, getToken());
+      navigate(`/admin/products/edit/${editingProduct._id}`);
     } else {
-      await createProductApi(formData, getToken());
+      const createdProduct = await createProductApi(formData, getToken());
+      navigate(`/admin/products/edit/${createdProduct._id}`);
     }
-
-    navigate("/admin/products");
   }
 
   return (
@@ -64,8 +65,8 @@ export default function AdminProductForm() {
           <h1>{editingProduct ? "Edit Uploaded Books" : "Upload Books"}</h1>
           <p style={{ marginTop: 8, color: "#555" }}>
             {editingProduct
-              ? "Update book details, editions, pricing, and availability."
-              : "Add book details, editions, pricing, inventory, and cover images."}
+              ? "Update book details, then manage its paperback, hardcover, PDF, EPUB, pricing, and availability below."
+              : "Add the title, author, cover, paperback or hardcover details, and optional PDF or EPUB files in one upload."}
           </p>
           {!editingProduct && isSubadmin && (
             <p style={{ marginTop: 8, color: "#8c6a00" }}>
@@ -84,6 +85,8 @@ export default function AdminProductForm() {
         <p>Loading product...</p>
       ) : error ? (
         <p>{error}</p>
+      ) : !editingProduct ? (
+        <BookUploadForm onSubmit={handleSubmit} />
       ) : (
         <>
           <ProductForm
