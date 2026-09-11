@@ -2896,6 +2896,12 @@ button:hover {
   min-height: 100%;
 }
 
+.author-story-card .muted,
+.author-story-card p,
+.author-story-card li {
+  color: rgba(255, 255, 255, 0.86);
+}
+
 .author-highlights {
   margin-top: 18px;
 }
@@ -5706,8 +5712,17 @@ body {
   border-color: rgba(232, 198, 106, .38);
 }
 
+.story-card .muted,
+.story-card p,
+.story-card li,
+.dual-card p,
+.service-card p,
+.service-card li,
 .story-card .contact-address {
-  color: var(--cream);
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.story-card .contact-address {
   font-size: 1rem;
   line-height: 1.75;
 }
