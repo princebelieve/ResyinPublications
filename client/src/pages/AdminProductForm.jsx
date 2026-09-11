@@ -40,10 +40,10 @@ export default function AdminProductForm() {
   async function handleSubmit(formData) {
     if (editingProduct) {
       await updateProductApi(editingProduct._id, formData, getToken());
-      navigate(`/admin/products/edit/${editingProduct._id}`);
+      navigate("/admin/products");
     } else {
-      const createdProduct = await createProductApi(formData, getToken());
-      navigate(`/admin/products/edit/${createdProduct._id}`);
+      await createProductApi(formData, getToken());
+      navigate("/admin/products");
     }
   }
 
