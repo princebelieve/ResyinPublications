@@ -10,9 +10,23 @@ export default function ProductCard({ product }) {
 
   useEffect(() => setImageFailed(false), [product.coverImage]);
 
+  const openBook = () => navigate(`/product/${product._id}`);
+
   return (
-    <div className="card resyin-book-card">
-      <Link className="card-image-wrap" to={`/product/${product._id}`} aria-label={`View ${product.name}`}>
+    <article
+      className="card resyin-book-card"
+      role="link"
+      tabIndex={0}
+      onClick={openBook}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openBook();
+        }
+      }}
+      aria-label={`View ${product.name}`}
+    >
+      <div className="card-image-wrap" aria-hidden="true">
         {product.coverImage && !imageFailed ? (
           <img
             src={product.coverImage}
@@ -33,27 +47,17 @@ export default function ProductCard({ product }) {
             Image unavailable
           </div>
         )}
-      </Link>
+      </div>
 
       <div className="card-body">
         <span className="store-book-category">{product.category || "Book"}</span>
-        <h3><Link to={`/product/${product._id}`}>{product.name}</Link></h3>
-        {(product.author || product.brand) && <Link className="store-book-author" to={`/collection?author=${encodeURIComponent(product.author || product.brand)}`}>by {product.author || product.brand}</Link>}
+        <h3>{product.name}</h3>
+        {(product.author || product.brand) && <Link className="store-book-author" onClick={(event) => event.stopPropagation()} to={`/collection?author=${encodeURIComponent(product.author || product.brand)}`}>by {product.author || product.brand}</Link>}
 
         {product.shortDescription && (
           <div className="card-description-block">
             <p
               className="muted card-short-description card-clickable-description"
-              onClick={() => navigate(`/product/${product._id}`)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  navigate(`/product/${product._id}`);
-                }
-              }}
-              aria-label={`Open product details for ${product.name}`}
             >
               {product.shortDescription}
             </p>
@@ -74,10 +78,10 @@ export default function ProductCard({ product }) {
         </div>
 
         <div className="card-actions">
-          <button type="button" className="resyin-card-action" onClick={() => navigate(`/product/${product._id}`)}>View Book</button>
-          <button className="wa resyin-card-action" onClick={() => window.open(`mailto:info@resyinpublications.com?subject=Book enquiry: ${encodeURIComponent(product.name)}`, "_blank")}>Enquire</button>
+          <button type="button" className="resyin-card-action" onClick={(event) => { event.stopPropagation(); openBook(); }}>View book</button>
+          <button className="wa resyin-card-action" onClick={(event) => { event.stopPropagation(); window.open(`mailto:info@resyinpublications.com?subject=Book enquiry: ${encodeURIComponent(product.name)}`, "_blank"); }}>Enquire</button>
         </div>
       </div>
-    </div>
+    </article>
   );
 }
