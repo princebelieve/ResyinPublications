@@ -2811,10 +2811,130 @@ button:hover {
   margin-bottom: 0;
 }
 
+.author-profile-page {
+  padding-top: 0;
+}
+
+.author-profile-hero {
+  align-items: center;
+}
+
+.author-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.author-profile-photo-wrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 540px;
+  padding: 28px;
+  border-radius: 32px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 28px 60px rgba(0, 0, 0, 0.22);
+}
+
+.author-profile-photo-wrap img {
+  width: min(420px, 82%);
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 6px solid rgba(232, 198, 106, 0.9);
+  background: #f4efe7;
+  box-shadow: 0 24px 44px rgba(0, 0, 0, 0.22);
+}
+
+.author-badge-card {
+  position: absolute;
+  right: 32px;
+  bottom: 20px;
+  display: grid;
+  place-items: center;
+  min-width: 220px;
+  padding: 20px 26px;
+  border: 1px solid rgba(232, 198, 106, 0.65);
+  border-radius: 22px;
+  background: rgba(5, 8, 5, 0.48);
+  backdrop-filter: blur(6px);
+  text-align: center;
+  color: var(--cream);
+}
+
+.author-badge-card span {
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--gold);
+}
+
+.author-badge-card strong {
+  display: block;
+  margin: 8px 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2rem, 2vw, 2.8rem);
+  line-height: 1.05;
+  color: var(--gold);
+}
+
+.author-badge-card small {
+  letter-spacing: 0.16em;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.author-profile-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}
+
+.author-story-card {
+  min-height: 100%;
+}
+
+.author-highlights {
+  margin-top: 18px;
+}
+
+.author-feature-block {
+  display: grid;
+  gap: 22px;
+}
+
+.author-values-header {
+  margin-bottom: 0;
+}
+
+.author-quote-card {
+  padding: 28px 32px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(18, 42, 29, 0.96), rgba(35, 67, 49, 0.92));
+  border: 1px solid rgba(232, 198, 106, 0.35);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.12);
+}
+
+.author-quote-card p {
+  margin: 0;
+  color: var(--cream);
+  font-size: clamp(1.06rem, 1.1vw, 1.35rem);
+  line-height: 1.8;
+  font-style: italic;
+}
+
+.author-action-row {
+  display: flex;
+  justify-content: center;
+}
+
 @media (max-width: 900px) {
 
   .about-hero-grid,
-  .about-story {
+  .about-story,
+  .author-profile-layout {
     grid-template-columns: 1fr;
   }
 
@@ -2832,6 +2952,26 @@ button:hover {
 
   .about-image-wrap img {
     height: 420px;
+  }
+
+  .author-profile-photo-wrap {
+    min-height: 420px;
+    padding: 18px;
+  }
+
+  .author-profile-photo-wrap img {
+    width: min(320px, 82%);
+  }
+
+  .author-badge-card {
+    position: static;
+    margin-top: 18px;
+    width: 100%;
+    max-width: 260px;
+  }
+
+  .author-cta-row {
+    justify-content: center;
   }
 }
 

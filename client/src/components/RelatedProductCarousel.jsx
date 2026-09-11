@@ -43,12 +43,14 @@ export default function RelatedProductCarousel({ products = [] }) {
 
   const item = carouselItems[activeIndex % carouselItems.length];
   const isPublisherPromo = item.type === "publisher-promo";
+  const itemSummary = (item.shortDescription || "")
+    .replace(/\s+/g, " ")
+    .trim();
+  const trimmedSummary = itemSummary.length > 110 ? `${itemSummary.slice(0, 107)}...` : itemSummary;
 
   const move = (direction) => {
     setActiveIndex((index) => (index + direction + carouselItems.length) % carouselItems.length);
   };
-
-  const openBook = () => navigate(`/product/${item._id}`);
 
   return (
     <section className="resyin-advert" aria-label="Featured books and publishing">
@@ -61,21 +63,7 @@ export default function RelatedProductCarousel({ products = [] }) {
           <div className="resyin-advert-copy">
             <div className="resyin-advert-label"><BookOpen size={16} /> {item.category}</div>
             <h2>{item.name}</h2>
-            <p>{item.shortDescription}</p>
-            {isPublisherPromo ? (
-                <Link to="/publish-with-us" className="resyin-advert-link">
-                Publish with us <ArrowRight size={16} />
-              </Link>
-            ) : (
-              <button 
-                type="button"
-                onClick={openBook}
-                className="resyin-advert-link"
-                style={{ background: "none", border: "none", cursor: "pointer", padding: 0, color: "#d17a3f", fontSize: "1rem", fontWeight: 500, display: "flex", alignItems: "center", gap: "8px" }}
-              >
-                View book <ArrowRight size={16} />
-              </button>
-            )}
+            <p>{trimmedSummary || "A thoughtful read for curious minds."}</p>
           </div>
           {carouselItems.length > 1 && (
             <div className="resyin-advert-controls">

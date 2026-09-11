@@ -1,31 +1,24 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight, BookOpen, ExternalLink } from "lucide-react";
-import { Link } from "react-router-dom";
+import { ArrowLeft, ArrowRight, BookOpen } from "lucide-react";
 
 const adverts = [
   {
     label: "FEATURED COLLECTION",
     title: "Ideas worth returning to.",
-    text: "Explore selected books from authors whose work rewards careful reading.",
+    text: "Selected books for thoughtful reading.",
     image: "/book-cover.png",
-    link: "/collection",
-    action: "Browse the catalog",
   },
   {
     label: "AUTHOR SPOTLIGHT",
-    title: "A distinguished voice in public life.",
-    text: "Discover Prof. Johnson A. Egonmwan's books as one collection within the wider RESYIN catalog.",
+    title: "A distinguished voice.",
+    text: "Prof. Johnson A. Egonmwan in one collection.",
     image: "/prof.png",
-    link: "/collection?q=Egonmwan",
-    action: "View author titles",
   },
   {
     label: "FOR AUTHORS & PUBLISHERS",
-    title: "Give your next book a place to be found.",
-    text: "Talk to RESYIN about bringing your title to readers, schools, and institutions.",
+    title: "Your next book, clearly positioned.",
+    text: "Bring your title to readers and institutions.",
     image: "/let's learn about nigeria.png",
-    link: "/contact",
-    action: "Publish with us",
   },
 ];
 
@@ -56,7 +49,6 @@ export default function ResyinAdvertCarousel() {
             <div className="resyin-advert-label"><BookOpen size={16} /> {advert.label}</div>
             <h2>{advert.title}</h2>
             <p>{advert.text}</p>
-            <Link to={advert.link} className="resyin-advert-link">{advert.action} <ExternalLink size={16} /></Link>
           </div>
           <div className="resyin-advert-controls">
             <button type="button" onClick={() => move(-1)} aria-label="Previous catalog highlight"><ArrowLeft size={17} /></button>
