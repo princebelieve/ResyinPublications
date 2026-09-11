@@ -1,44 +1,40 @@
 import { useState } from "react";
-import { Plus, Save, Trash2 } from "lucide-react";
+import { Save } from "lucide-react";
 import { updateProductApi } from "../services/api";
 import { getToken } from "../utils/auth";
 
-const blankEdition = { format: "paperback", label: "Paperback", price: 0, salePrice: "", stock: 0, isbn: "", sku: "", shippingWeight: 0 };
+const formatOptions = [["paperback", "Paperback"], ["hardcover", "Hardcover"], ["pdf", "PDF"], ["epub", "EPUB"]];
+const defaultFormat = (format, label) => ({ format, label, price: 0, salePrice: "", stock: 0, isbn: "", sku: "", shippingWeight: 0 });
 
 export default function BookEditionsForm({ product, onSaved }) {
-  const [editions, setEditions] = useState(product.editions?.length ? product.editions : [{ ...blankEdition }]);
+  const existing = product.editions?.length ? product.editions : [];
+  const [editions, setEditions] = useState(existing);
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
 
-  function change(index, event) {
-    const { name, value } = event.target;
-    setEditions((current) => current.map((edition, editionIndex) => editionIndex === index ? { ...edition, [name]: value } : edition));
+  function toggleFormat(format, label) {
+    setEditions((current) => current.some((item) => item.format === format) ? current.filter((item) => item.format !== format) : [...current, defaultFormat(format, label)]);
   }
 
-  function addEdition() { setEditions((current) => [...current, { ...blankEdition }]); }
-  function removeEdition(index) { setEditions((current) => current.filter((_, editionIndex) => editionIndex !== index)); }
+  function change(format, event) {
+    const { name, value } = event.target;
+    setEditions((current) => current.map((item) => item.format === format ? { ...item, [name]: value } : item));
+  }
 
   async function save(event) {
     event.preventDefault();
+    if (!editions.length) { setMessage("Select at least one available book format."); return; }
+    if (editions.some((item) => Number(item.price) < 0)) { setMessage("Enter a valid price for every selected format."); return; }
     try {
-      setSaving(true);
+      setSaving(true); setMessage("");
       const data = new FormData();
-      data.append("editions", JSON.stringify(editions.map((edition) => ({
-        ...edition,
-        price: Number(edition.price || 0),
-        salePrice: edition.salePrice === "" ? null : Number(edition.salePrice),
-        stock: Number(edition.stock || 0),
-        shippingWeight: Number(edition.shippingWeight || 0),
-      }))));
+      data.append("editions", JSON.stringify(editions.map((item) => ({ ...item, price: Number(item.price || 0), salePrice: item.salePrice === "" ? null : Number(item.salePrice), stock: Number(item.stock || 0), shippingWeight: Number(item.shippingWeight || 0) }))));
       const saved = await updateProductApi(product._id, data, getToken());
       onSaved?.(saved);
-      setMessage("Book editions saved.");
-    } catch (error) {
-      setMessage(error.message || "Unable to save editions.");
-    } finally {
-      setSaving(false);
-    }
+      setMessage("Book availability saved.");
+    } catch (error) { setMessage(error.message || "Unable to save book availability."); }
+    finally { setSaving(false); }
   }
 
-  return <section className="book-editions-panel"><div className="book-editions-heading"><div><span className="eyebrow">PAPERBACK, HARDCOVER &amp; DIGITAL</span><h2>Book formats</h2><p>Add paperback, hardcover, PDF, or EPUB formats for this book. Each format has its own price, stock, ISBN, SKU, and delivery details.</p></div><button type="button" onClick={addEdition}><Plus size={16} /> Add another format</button></div><form onSubmit={save}>{editions.map((edition, index) => <div className="book-edition-row" key={`${edition.format}-${index}`}><select aria-label={`Book format ${index + 1}`} name="format" value={edition.format} onChange={(event) => change(index, event)}><option value="paperback">Paperback</option><option value="hardcover">Hardcover</option><option value="pdf">PDF</option><option value="epub">EPUB</option></select><input name="label" placeholder="Format label" value={edition.label || ""} onChange={(event) => change(index, event)} /><input type="number" min="0" name="price" placeholder="Price" value={edition.price} onChange={(event) => change(index, event)} /><input type="number" min="0" name="salePrice" placeholder="Sale price" value={edition.salePrice ?? ""} onChange={(event) => change(index, event)} /><input type="number" min="0" name="stock" placeholder="Stock" value={edition.stock} onChange={(event) => change(index, event)} /><input name="isbn" placeholder="ISBN" value={edition.isbn || ""} onChange={(event) => change(index, event)} /><input name="sku" placeholder="SKU" value={edition.sku || ""} onChange={(event) => change(index, event)} /><input type="number" min="0" step="0.01" name="shippingWeight" placeholder="Weight kg" value={edition.shippingWeight} onChange={(event) => change(index, event)} /><button type="button" aria-label="Remove format" onClick={() => removeEdition(index)}><Trash2 size={16} /></button></div>)}<button className="primary" type="submit" disabled={saving}><Save size={16} /> {saving ? "Saving formats..." : "Save book formats"}</button>{message && <p className="inline-toast success" role="status">{message}</p>}</form></section>;
+  return <section className="book-editions-panel"><div className="book-editions-heading"><div><span className="eyebrow">ONE BOOK, MULTIPLE OPTIONS</span><h2>Available formats</h2><p>This is the same book. Select the formats customers can buy, then set the format-specific price, stock, ISBN, or SKU.</p></div></div><form onSubmit={save}><div className="book-format-checks">{formatOptions.map(([format, label]) => <label className="wizard-checkbox" key={format}><input type="checkbox" checked={editions.some((item) => item.format === format)} onChange={() => toggleFormat(format, label)} /><span>{label}</span></label>)}</div>{editions.length > 0 && <div className="book-format-settings">{editions.map((item) => <div className="book-format-setting" key={item.format}><strong>{item.label || item.format}</strong><input required type="number" min="0" name="price" placeholder="Price" value={item.price} onChange={(event) => change(item.format, event)} /><input type="number" min="0" name="salePrice" placeholder="Sale price" value={item.salePrice ?? ""} onChange={(event) => change(item.format, event)} /><input type="number" min="0" name="stock" placeholder="Stock" value={item.stock} onChange={(event) => change(item.format, event)} /><input name="isbn" placeholder="ISBN" value={item.isbn || ""} onChange={(event) => change(item.format, event)} /><input name="sku" placeholder="SKU" value={item.sku || ""} onChange={(event) => change(item.format, event)} /></div>)}</div>}<button className="primary" type="submit" disabled={saving}><Save size={16} /> {saving ? "Saving availability..." : "Save book availability"}</button>{message && <p className="inline-toast success" role="status">{message}</p>}</form></section>;
 }

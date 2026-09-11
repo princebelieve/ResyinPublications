@@ -263,18 +263,10 @@ export async function completePendingPayment(orderId) {
   return apiRequest(`/api/orders/${orderId}/complete-payment`, { method: "POST" });
 }
 
-export async function getDistributorDashboard() { return apiRequest("/api/distributor/dashboard"); }
-export async function getDistributorCatalog() { return apiRequest("/api/distributor/catalog"); }
-export async function getDistributorStore(code) { return apiRequest(`/api/distributor/store/${encodeURIComponent(code)}`); }
-export async function createDistributorStockOrder(items) { return apiRequest("/api/distributor/stock-orders", { method: "POST", body: JSON.stringify({ items }) }); }
-export async function recordDistributorSale(productId, quantity) { return apiRequest("/api/distributor/sales", { method: "POST", body: JSON.stringify({ productId, quantity }) }); }
-export async function applyForDistributor(payload) { return apiRequest("/api/distributor/apply", { method: "POST", body: JSON.stringify(payload) }); }
 export async function submitPublisherBook(formData, token) { return apiRequest("/api/publishers/submissions", { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: formData }); }
 export async function applyAsPublisher(payload, token) { return apiRequest("/api/publishers/apply", { method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }, body: JSON.stringify(payload) }); }
 export async function getPendingPublisherOrders(token) { return apiRequest("/api/publishers/orders/pending", { headers: { Authorization: `Bearer ${token}` } }); }
 export async function confirmPublisherOrderPayment(orderId, token) { return apiRequest(`/api/publishers/orders/${orderId}/confirm-payment`, { method: "POST", headers: { Authorization: `Bearer ${token}` } }); }
-export async function updateDistributorSettings(payload) { return apiRequest("/api/distributor/settings", { method: "PUT", body: JSON.stringify(payload) }); }
-export async function getAdminDistributorInventory() { return apiRequest("/api/admin/distributors/inventory"); }
 
 export async function getShippingSummary(country = "NG") {
   const res = await fetch(`${BASE_URL}/api/shipping/summary?country=${encodeURIComponent(country)}`);

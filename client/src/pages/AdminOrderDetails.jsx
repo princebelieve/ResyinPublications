@@ -70,7 +70,7 @@ export default function AdminOrderDetails() {
       <div className="order-side">
         <div className="order-card">
           <h3>Summary</h3>
-          <p>Payment method: {order.paymentMethod === "cash_on_delivery" ? "Pay on delivery" : order.paymentMethod === "manual_bank_transfer" ? "Manual bank transfer" : order.paymentMethod === "distributor_transfer" ? "Distributor transfer" : "Paystack"}</p>
+          <p>Payment method: {order.paymentMethod === "cash_on_delivery" ? "Pay on delivery" : order.paymentMethod === "manual_bank_transfer" ? "Manual bank transfer" : order.paymentMethod === "publisher_direct_transfer" ? "Direct publisher transfer" : "Paystack"}</p>
           {order.paymentMethod === "cash_on_delivery" && <p>Payment before handover: {order.cashCollectionStatus}</p>}
           {order.paymentMethod === "manual_bank_transfer" && <p>Transfer verification: {order.manualTransferStatus}</p>}
           {order.paymentInstructions && <p className="muted">{order.paymentInstructions}</p>}

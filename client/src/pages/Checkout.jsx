@@ -1,6 +1,6 @@
 //client/src/pages/Checkout.jsx
 import { useEffect, useState } from "react";
-import { getDistributorStore, getNigerianDeliveryStates, getPublicStorePaymentSettings, getShippingDestinations, getTransportCompanies, initializeCheckout, previewShipping } from "../services/api";
+import { getNigerianDeliveryStates, getPublicStorePaymentSettings, getShippingDestinations, getTransportCompanies, initializeCheckout, previewShipping } from "../services/api";
 import Navbar from "../components/Navbar";
 import { useCart } from "../context/CartContext";
 const COUNTRY_NAMES = new Intl.DisplayNames(["en"], { type: "region" });
@@ -17,7 +17,6 @@ export default function Checkout() {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
   const [shippingError, setShippingError] = useState("");
-  const [distributor, setDistributor] = useState(null);
   const [storePaymentSettings, setStorePaymentSettings] = useState(null);
   const [transportCompanies, setTransportCompanies] = useState([]);
 
@@ -84,12 +83,6 @@ export default function Checkout() {
   }, []);
 
   useEffect(() => {
-    const code = sessionStorage.getItem("activeDistributorCode");
-    if (!code) return;
-    getDistributorStore(code).then((data) => setDistributor(data.distributor)).catch(() => { sessionStorage.removeItem("activeDistributorCode"); setDistributor(null); });
-  }, []);
-
-  useEffect(() => {
     async function loadShipping() {
       try {
         if (form.deliveryMethod === "pickup") {
@@ -135,10 +128,9 @@ export default function Checkout() {
     try {
       const response = await initializeCheckout({
         ...form,
-        distributorCode: sessionStorage.getItem("activeDistributorCode") || "",
       });
 
-      if (["cash_on_delivery", "distributor_transfer", "manual_bank_transfer", "publisher_direct_transfer"].includes(response.checkoutType)) {
+      if (["cash_on_delivery", "manual_bank_transfer", "publisher_direct_transfer"].includes(response.checkoutType)) {
         await clearCart();
         window.location.href = response.confirmation_url;
         return;
@@ -194,8 +186,8 @@ export default function Checkout() {
               <fieldset className="payment-methods checkout-fulfilment-methods">
                 <legend>How would you like to receive your order?</legend>
                 <p className="checkout-fulfilment-help">Delivery goes to a delivery partner or collection park in your selected state; customers collect from there. Office pickup is only for customers coming to RESYIN in Benin City.</p>
-                <label className="payment-method-option"><input type="radio" name="deliveryMethod" value="delivery" checked={form.deliveryMethod === "delivery"} onChange={handleChange} /><span><strong>Delivery</strong><small>{distributor ? `${distributor.name} will arrange delivery.` : "RESYIN will arrange delivery."}</small></span></label>
-                <label className="payment-method-option"><input type="radio" name="deliveryMethod" value="pickup" checked={form.deliveryMethod === "pickup"} onChange={handleChange} disabled={Boolean(distributor && !distributor.distributorPickupEnabled)} /><span><strong>Pick up — no shipping fee</strong><small>{distributor?.distributorPickupAddress || "Pick up from RESYIN Publications after confirmation."}</small></span></label>
+                <label className="payment-method-option"><input type="radio" name="deliveryMethod" value="delivery" checked={form.deliveryMethod === "delivery"} onChange={handleChange} /><span><strong>Delivery</strong><small>RESYIN will arrange delivery.</small></span></label>
+                <label className="payment-method-option"><input type="radio" name="deliveryMethod" value="pickup" checked={form.deliveryMethod === "pickup"} onChange={handleChange} /><span><strong>Pick up — no shipping fee</strong><small>Pick up from RESYIN Publications after confirmation.</small></span></label>
               </fieldset>
 
               {form.deliveryMethod === "delivery" ? (
@@ -217,7 +209,7 @@ export default function Checkout() {
               ) : (
                 <div className="checkout-pickup-note">
                   <strong>RESYIN office pickup selected</strong>
-                  <span>{distributor?.distributorPickupAddress || "Collect from RESYIN Publications in Benin City after confirmation."}</span>
+                  <span>Collect from RESYIN Publications in Benin City after confirmation.</span>
                 </div>
               )}
 
@@ -235,8 +227,7 @@ export default function Checkout() {
                   <span><strong>Pay online securely</strong><small>Use card, bank transfer, or USSD through Paystack.</small></span>
                 </label>}
                 {canPayPublisherDirectly && <label className="payment-method-option"><input type="radio" name="paymentMethod" value="publisher_direct_transfer" checked={form.paymentMethod === "publisher_direct_transfer"} onChange={handleChange} /><span><strong>Pay the publisher directly</strong><small>Transfer to the publisher's verified account. The book becomes downloadable after the publisher confirms payment.</small></span></label>}
-                {distributor && <label className="payment-method-option"><input type="radio" name="paymentMethod" value="distributor_transfer" checked={form.paymentMethod === "distributor_transfer"} onChange={handleChange} disabled={!distributor.distributorBankName || !distributor.distributorAccountNumber} /><span><strong>Transfer to {distributor.name}</strong><small>{distributor.distributorAccountName} · {distributor.distributorAccountNumber} · {distributor.distributorBankName}</small></span></label>}
-                {!distributor && storePaymentSettings?.manualTransferEnabled && <label className="payment-method-option"><input type="radio" name="paymentMethod" value="manual_bank_transfer" checked={form.paymentMethod === "manual_bank_transfer"} onChange={handleChange} /><span><strong>Transfer directly to RESYIN</strong><small>{storePaymentSettings.accountName} · {storePaymentSettings.accountNumber} · {storePaymentSettings.bankName}{storePaymentSettings.transferInstructions ? ` — ${storePaymentSettings.transferInstructions}` : ""}</small></span></label>}
+                {storePaymentSettings?.manualTransferEnabled && <label className="payment-method-option"><input type="radio" name="paymentMethod" value="manual_bank_transfer" checked={form.paymentMethod === "manual_bank_transfer"} onChange={handleChange} /><span><strong>Transfer directly to RESYIN</strong><small>{storePaymentSettings.accountName} · {storePaymentSettings.accountNumber} · {storePaymentSettings.bankName}{storePaymentSettings.transferInstructions ? ` — ${storePaymentSettings.transferInstructions}` : ""}</small></span></label>}
                 <label className="payment-method-option"><input type="radio" name="paymentMethod" value="cash_on_delivery" checked={form.paymentMethod === "cash_on_delivery"} onChange={handleChange} /><span><strong>Pay on delivery by transfer</strong><small>When the agent arrives, transfer to the official RESYIN account sent to your WhatsApp or phone. The agent confirms payment before handing over the order; no cash is collected.</small></span></label>
               </fieldset>
 
@@ -249,8 +240,6 @@ export default function Checkout() {
                   ? "Processing…"
                     : form.paymentMethod === "publisher_direct_transfer"
                       ? "Place Direct Publisher Payment Order"
-                      : form.paymentMethod === "distributor_transfer"
-                      ? "Place Transfer Order"
                       : form.paymentMethod === "cash_on_delivery"
                         ? "Place Pay-on-Delivery Order"
                       : form.paymentMethod === "manual_bank_transfer"
@@ -327,12 +316,6 @@ export default function Checkout() {
               <p className="muted" style={{ marginTop: 6 }}>
                 {form.deliveryMethod === "pickup" ? "RESYIN office pickup selected — no shipping fee applies." : `Collection from ${form.pickupTransportCompany === "Other / specify a delivery partner or park" ? form.pickupOtherLocation || "your selected delivery partner" : form.pickupTransportCompany || "your selected delivery partner"} — the delivery fee is included above.`}
               </p>
-              {distributor && (
-                <div className="distributor-delivery-summary">
-                  <strong>Fulfilled by {distributor.name}</strong>
-                  <span>{form.deliveryMethod === "pickup" ? "Collect from the RESYIN Benin office after confirmation." : `Customer will collect from ${form.pickupTransportCompany === "Other / specify a delivery partner or park" ? form.pickupOtherLocation || "the selected delivery partner" : form.pickupTransportCompany || "the selected delivery partner"}.`}</span>
-                </div>
-              )}
               <p className="muted" style={{ marginTop: 6 }}>
                 This amount becomes sales revenue only after payment is
                 confirmed.

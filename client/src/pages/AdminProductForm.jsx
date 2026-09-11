@@ -1,10 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import ProductForm from "../components/ProductForm";
 import BookUploadForm from "../components/BookUploadForm";
-import DigitalBookFilesForm from "../components/DigitalBookFilesForm";
-import BookEditionsForm from "../components/BookEditionsForm";
 import useAuth from "../context/AuthContext";
 import {
   createProductApi,
@@ -85,18 +82,8 @@ export default function AdminProductForm() {
         <p>Loading product...</p>
       ) : error ? (
         <p>{error}</p>
-      ) : !editingProduct ? (
-        <BookUploadForm onSubmit={handleSubmit} />
       ) : (
-        <>
-          <ProductForm
-            onSubmit={handleSubmit}
-            editingProduct={editingProduct}
-            onCancelEdit={() => navigate("/admin/products")}
-          />
-          {editingProduct && <DigitalBookFilesForm product={editingProduct} onSaved={setEditingProduct} />}
-          {editingProduct && <BookEditionsForm product={editingProduct} onSaved={setEditingProduct} />}
-        </>
+        <BookUploadForm onSubmit={handleSubmit} editingProduct={editingProduct} />
       )}
     </div>
   );

@@ -58,10 +58,6 @@ import HowToUse from "./pages/HowToUse";
 import Testimonials from "./pages/Testimonials";
 import AdminTestimonials from "./pages/AdminTestimonials";
 import PullToRefresh from "./components/PullToRefresh";
-import RequireDistributor from "./components/RequireDistributor";
-import DistributorDashboard from "./pages/DistributorDashboard";
-import AdminDistributors from "./pages/AdminDistributors";
-import DistributorStore from "./pages/DistributorStore";
 import Outreach from "./pages/Outreach";
 import Journey from "./pages/Journey";
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
@@ -144,8 +140,6 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/collection" element={<Collection />} />
             <Route path="/product/:id" element={<ProductDetails />} />
-            <Route path="/d/:code" element={<DistributorStore />} />
-
             <Route
               path="/cart"
               element={
@@ -171,8 +165,6 @@ export default function App() {
                 </RequireAuth>
               }
             />
-            <Route path="/distributor" element={<RequireDistributor><DistributorDashboard /></RequireDistributor>} />
-
             <Route
               path="/profile"
               element={
@@ -275,8 +267,6 @@ export default function App() {
                 </RequireAdmin>
               }
             />
-            <Route path="/admin/distributors" element={<RequireAdmin><AdminLayout><AdminDistributors /></AdminLayout></RequireAdmin>} />
-
             <Route
               path="/admin/orders/:id"
               element={

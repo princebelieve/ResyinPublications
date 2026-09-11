@@ -7,7 +7,7 @@ const purchaseSteps = [
   ["2", "Choose your products", "Open Shop, select a product, choose the quantity, and add it to your cart."],
   ["3", "Review your cart", "Confirm quantities or remove anything you do not want before continuing to checkout."],
   ["4", "Choose delivery or pickup", "Delivery adds the applicable shipping fee. Pickup shows the collection location and removes shipping fees."],
-  ["5", "Choose how to pay", "Pay securely online, pay on delivery where available, or use the distributor transfer option when shopping through a distributor."],
+  ["5", "Choose how to pay", "Pay securely online or choose the payment method shown for your order at checkout."],
   ["6", "Track your order", "Use My Orders in your dashboard to see payment and fulfilment updates after placing your order."],
 ];
 
@@ -69,7 +69,7 @@ export default function HowToUse() {
               <h2>How publishing with RESYIN works</h2>
               <p>Submit a complete book package, wait for review, and make approved editions available to readers.</p>
             </div>
-            <div className="how-to-use-steps distributor-how-to-steps">
+            <div className="how-to-use-steps">
               {publisherSteps.map(([title, description], index) => <article className="how-to-use-step content-card" key={title}><span>{index + 1}</span><div><h3>{title}</h3><p>{description}</p></div></article>)}
             </div>
             <aside className="how-to-use-note"><strong>Important:</strong> New publisher books remain hidden until an administrator approves the submission.</aside>
@@ -77,7 +77,7 @@ export default function HowToUse() {
         </section>
 
         <section className="how-to-use-help">
-          <div className="container"><h2>Need help with an order or application?</h2><p>Our support guide and team can help you with orders, pickup, delivery, payment, or distributor applications.</p><div className="easy-actions"><Link className="easy-btn easy-btn-primary" to="/support">Open support guide</Link><Link className="easy-btn easy-btn-light" to="/contact">Contact RESYIN</Link></div></div>
+          <div className="container"><h2>Need help with an order or a book submission?</h2><p>Our support guide and team can help you with orders, pickup, delivery, payment, or new publisher submissions.</p><div className="easy-actions"><Link className="easy-btn easy-btn-primary" to="/support">Open support guide</Link><Link className="easy-btn easy-btn-light" to="/contact">Contact RESYIN</Link></div></div>
         </section>
       </main>
       <Footer />

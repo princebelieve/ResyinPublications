@@ -127,7 +127,6 @@ export default function Navbar() {
 
           {isLoggedIn && <Link to="/publish-with-us">Publish with us</Link>}
 
-
           {isAdmin && <Link to="/admin">Admin</Link>}
 
           {!isLoggedIn ? (
@@ -269,12 +268,9 @@ export default function Navbar() {
                 My Orders
               </Link>
 
-              {user?.distributorStatus !== "approved" && user?.distributorStatus !== "pending" && (
-                <Link to="/publish-with-us" onClick={() => setOpen(false)}>
-                  Publish with us
-                </Link>
-              )}
-
+              <Link to="/publish-with-us" onClick={() => setOpen(false)}>
+                Publish with us
+              </Link>
 
               <Link to="/profile" onClick={() => setOpen(false)}>
                 Profile

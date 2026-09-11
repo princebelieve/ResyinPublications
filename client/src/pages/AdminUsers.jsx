@@ -93,13 +93,6 @@ export default function AdminUsers() {
     }
   }
 
-  async function changeDistributorStatus(user, distributorStatus) {
-    try {
-      const response = await updateAdminUser(user._id, { distributorStatus }, token);
-      setUsers((prev) => prev.map((u) => u._id === user._id ? { ...u, ...response.user } : u));
-    } catch (err) { console.error(err); }
-  }
-
   async function changePublisherStatus(user, publisherStatus) {
     try {
       const response = await updateAdminUser(user._id, { publisherStatus }, token);
@@ -189,24 +182,6 @@ export default function AdminUsers() {
                 </select>
               </div>
               <div style={{ marginBottom: 12 }}>
-                <strong>Distributor:</strong>{" "}
-                <select value={u.distributorStatus || "none"} onChange={(e) => changeDistributorStatus(u, e.target.value)} style={{ marginLeft: 8, padding: 4, borderRadius: 4, border: "1px solid #ccc" }}>
-                  <option value="none">Not a distributor</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="suspended">Suspended</option>
-                </select>
-                {u.distributorCode && <small style={{ display: "block", marginTop: 4 }}>Code: {u.distributorCode}</small>}
-              </div>
-              {u.distributorStatus === "pending" && (
-                <div className="admin-distributor-application">
-                  <strong>Application details</strong>
-                  <p><b>Business:</b> {u.distributorBusinessName || "Not provided"}</p>
-                  <p><b>Phone:</b> {u.phone || "Not provided"}</p>
-                  <p><b>Pickup:</b> {u.distributorPickupAddress || "Not provided"}</p>
-                  {u.distributorDeliveryCoverage && <p><b>Delivery area:</b> {u.distributorDeliveryCoverage}</p>}
-                  <p><b>Payment account:</b> {u.distributorBankName || "—"} · {u.distributorAccountName || "—"} · {u.distributorAccountNumber || "—"}</p>
-                  {u.distributorApplicationNote && <p><b>Note:</b> {u.distributorApplicationNote}</p>}
-                </div>
-              )}
-              <div style={{ marginBottom: 12 }}>
                 <strong>Publisher:</strong>{" "}
                 <select value={u.publisherStatus || "none"} onChange={(e) => changePublisherStatus(u, e.target.value)} style={{ marginLeft: 8, padding: 4, borderRadius: 4, border: "1px solid #ccc" }}>
                   <option value="none">Not a publisher</option><option value="pending">Subscription pending</option><option value="approved">Approved publisher</option><option value="suspended">Suspended</option>
@@ -214,7 +189,7 @@ export default function AdminUsers() {
                 {u.publisherSubscriptionExpiresAt && <small style={{ display: "block", marginTop: 4 }}>Subscription expires: {formatDate(u.publisherSubscriptionExpiresAt)}</small>}
               </div>
               {u.publisherStatus === "pending" && (
-                <div className="admin-distributor-application">
+                <div className="admin-publisher-application">
                   <strong>Publisher application</strong>
                   <p><b>Payment account:</b> {u.publisherBankName || "—"} · {u.publisherAccountName || "—"} · {u.publisherAccountNumber || "—"}</p>
                   {u.publisherApplicationNote && <p><b>Note:</b> {u.publisherApplicationNote}</p>}

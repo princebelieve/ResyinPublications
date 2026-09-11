@@ -28,10 +28,10 @@ router.post("/", protect, async (req, res) => {
 
     const {
       customerName, email, phone, address, city, state, country, notes, pickupTransportCompany, pickupOtherLocation,
-      paymentMethod = "paystack", distributorCode = "", deliveryMethod = "delivery",
+      paymentMethod = "paystack", deliveryMethod = "delivery",
     } = req.body;
 
-    if (!["paystack", "cash_on_delivery", "distributor_transfer", "manual_bank_transfer", "publisher_direct_transfer"].includes(paymentMethod)) {
+    if (!["paystack", "cash_on_delivery", "manual_bank_transfer", "publisher_direct_transfer"].includes(paymentMethod)) {
       return res.status(400).json({ message: "Choose a valid payment method." });
     }
     const selectedPickupLocation = String(pickupTransportCompany || "").trim() === "Other / specify a delivery partner or park"
@@ -41,13 +41,6 @@ router.post("/", protect, async (req, res) => {
       return res.status(400).json({ message: "Select the transport company or motor park you prefer." });
     }
 
-    let distributor = null;
-    if (distributorCode) {
-      distributor = await User.findOne({ distributorCode: String(distributorCode).toUpperCase(), distributorStatus: "approved", isSuspended: { $ne: true }, isDeleted: { $ne: true } });
-      if (!distributor) return res.status(400).json({ message: "The selected distributor is no longer available." });
-    }
-    if (paymentMethod === "distributor_transfer" && !distributor) return res.status(400).json({ message: "Bank transfer is available only through an approved distributor shop." });
-    if (paymentMethod === "distributor_transfer" && (!distributor.distributorBankName || !distributor.distributorAccountNumber)) return res.status(400).json({ message: "This distributor has not completed payment details yet." });
     let storePaymentSettings = null;
     if (paymentMethod === "manual_bank_transfer") {
       storePaymentSettings = await StorePaymentSettings.findOne({ key: "default" });
@@ -161,8 +154,6 @@ router.post("/", protect, async (req, res) => {
     // 4. CREATE ORDER (pending) with valid payment reference
     const order = await Order.create({
       userId,
-      distributorId: distributor?._id || null,
-      distributorCode: distributor?.distributorCode || "",
       customerName,
       email,
       phone,
@@ -178,9 +169,9 @@ router.post("/", protect, async (req, res) => {
       deliveryFee: shippingFee,
       deliveryZone: country,
       deliveryMethod,
-      pickupLocation: deliveryMethod === "pickup" ? (distributor?.distributorPickupAddress || "RESYIN Publications, Benin City") : "",
+      pickupLocation: deliveryMethod === "pickup" ? "RESYIN Publications, Benin City" : "",
       transportCompanyPickupPoint: deliveryMethod === "delivery" ? selectedPickupLocation : "",
-      paymentInstructions: paymentMethod === "distributor_transfer" ? `Transfer ₦${totalAmount.toLocaleString()} to ${distributor.distributorAccountName} · ${distributor.distributorAccountNumber} · ${distributor.distributorBankName}` : "",
+      paymentInstructions: "",
       deliveryEstimate: shippingData.estimatedDays || "",
       shippingService: shippingData.serviceName || "",
       deliveryContact: phone,
@@ -245,7 +236,7 @@ router.post("/", protect, async (req, res) => {
       });
     }
 
-    if (["cash_on_delivery", "distributor_transfer", "manual_bank_transfer", "publisher_direct_transfer"].includes(paymentMethod)) {
+    if (["cash_on_delivery", "manual_bank_transfer", "publisher_direct_transfer"].includes(paymentMethod)) {
       await Cart.findOneAndUpdate({ userId }, { items: [] });
       return res.json({
         checkoutType: paymentMethod,

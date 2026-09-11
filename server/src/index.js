@@ -26,8 +26,6 @@ const notificationRoutes = require("./routes/notification.routes");
 const pushRoutes = require("./routes/push.routes");
 const testimonialRoutes = require("./routes/testimonial.routes");
 const shareRoutes = require("./routes/share.routes");
-const distributorRoutes = require("./routes/distributor.routes");
-const adminDistributorRoutes = require("./routes/admin.distributor.routes");
 const paymentSettingsRoutes = require("./routes/payment.settings.routes");
 const publisherSubscriptionSettingsRoutes = require("./routes/publisher.subscription.settings.routes");
 const publisherRoutes = require("./routes/publisher.routes");
@@ -73,8 +71,6 @@ app.use(express.json());
 
 app.use("/api/testimonials", testimonialRoutes);
 app.use("/api/share", shareRoutes);
-app.use("/api/distributor", distributorRoutes);
-app.use("/api/admin/distributors", adminDistributorRoutes);
 app.use("/api/payment-settings", paymentSettingsRoutes);
 app.use("/api/publisher-subscription-settings", publisherSubscriptionSettingsRoutes);
 app.use("/api/publishers", publisherRoutes);

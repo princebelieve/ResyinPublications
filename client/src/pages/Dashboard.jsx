@@ -1,34 +1,16 @@
 //client/src/pages/Dashboard.jsx
-import { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { applyForDistributor, completePendingPayment, confirmPublisherOrderPayment, getMyOrders, getPendingPublisherOrders, getProfile, getNigerianBanks, resolveNigerianAccount } from "../services/api";
+import { useEffect, useState } from "react";
+import { completePendingPayment, confirmPublisherOrderPayment, getMyOrders, getPendingPublisherOrders, getProfile } from "../services/api";
 import { formatDate } from "../utils/formatDate";
 import useAuth from "../context/AuthContext";
 import UserLayout from "../components/user/UserLayout";
-import BankSelect from "../components/BankSelect";
 
 export default function Dashboard() {
-  const [searchParams] = useSearchParams();
   const [orders, setOrders] = useState([]);
   const [publisherOrders, setPublisherOrders] = useState([]);
   const [user, setUser] = useState(null);
   const { token, setUser: setAuthenticatedUser } = useAuth();
-  const [distributorMessage, setDistributorMessage] = useState("");
-  const [banks, setBanks] = useState([]);
-  const [resolvingAccount, setResolvingAccount] = useState(false);
-  const [showDistributorForm, setShowDistributorForm] = useState(() => searchParams.get("distributor") === "apply");
-  const distributorFormRef = useRef(null);
-  const [distributorApplication, setDistributorApplication] = useState({
-    businessName: "",
-    phone: "",
-    pickupAddress: "",
-    deliveryCoverage: "",
-    bankName: "",
-    bankCode: "",
-    accountName: "",
-    accountNumber: "",
-    note: "",
-  });
+  const [notice, setNotice] = useState("");
 
   useEffect(() => {
     async function load() {
@@ -36,25 +18,11 @@ export default function Dashboard() {
         const profile = await getProfile(token);
         setUser(profile.user);
         setAuthenticatedUser(profile.user);
-        setDistributorApplication({
-          businessName: profile.user.distributorBusinessName || profile.user.name || "",
-          phone: profile.user.phone || "",
-          pickupAddress: profile.user.distributorPickupAddress || profile.user.address || "",
-          deliveryCoverage: profile.user.distributorDeliveryCoverage || "",
-          bankName: profile.user.distributorBankName || "",
-          bankCode: profile.user.distributorBankCode || "",
-          accountName: profile.user.distributorAccountName || "",
-          accountNumber: profile.user.distributorAccountNumber || "",
-          note: profile.user.distributorApplicationNote || "",
-        });
 
         const ordersData = await getMyOrders(token);
         setOrders(ordersData);
         const publisherOrderData = await getPendingPublisherOrders(token).catch(() => []);
         setPublisherOrders(Array.isArray(publisherOrderData) ? publisherOrderData : []);
-
-        const bankData = await getNigerianBanks();
-        setBanks(Array.isArray(bankData) ? bankData : bankData.banks || []);
       } catch (err) {
         console.error(err);
       }
@@ -62,17 +30,6 @@ export default function Dashboard() {
 
     load();
   }, [token]);
-
-  useEffect(() => {
-    if (searchParams.get("distributor") === "apply") setShowDistributorForm(true);
-  }, [searchParams]);
-
-  useEffect(() => {
-    if (searchParams.get("distributor") !== "apply" || !showDistributorForm) return;
-    window.requestAnimationFrame(() => {
-      distributorFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-  }, [searchParams, showDistributorForm]);
 
   const activeOrdersCount = orders.filter(
     (o) => o.deliveryStatus !== "delivered" && o.deliveryStatus !== "cancelled",
@@ -82,72 +39,12 @@ export default function Dashboard() {
     (o) => o.deliveryStatus === "delivered",
   ).length;
 
-  function updateDistributorApplication(event) {
-    const { name, value } = event.target;
-    setDistributorApplication((current) => {
-      if (name === "bankCode") {
-        const bank = banks.find((item) => String(item.code) === value);
-        return { ...current, bankCode: value, bankName: bank?.name || "", accountName: "" };
-      }
-      if (name === "accountNumber") return { ...current, accountNumber: value.replace(/\D/g, "").slice(0, 10), accountName: "" };
-      return { ...current, [name]: value };
-    });
-  }
-
-  function chooseDistributorBank(bankCode) {
-    const bank = banks.find((item) => String(item.code) === bankCode);
-    setDistributorApplication((current) => ({ ...current, bankCode, bankName: bank?.name || "", accountName: "" }));
-  }
-
-  async function verifyDistributorAccount() {
-    if (!distributorApplication.bankCode || distributorApplication.accountNumber.length !== 10) {
-      setDistributorMessage("Select your bank and enter the 10-digit account number first.");
-      return;
-    }
-    setResolvingAccount(true);
-    setDistributorMessage("");
-    try {
-      const result = await resolveNigerianAccount(distributorApplication.bankCode, distributorApplication.accountNumber);
-      setDistributorApplication((current) => ({ ...current, accountName: result.accountName || "" }));
-    } catch (error) {
-      setDistributorMessage(error.message || "We could not verify that account. Check the bank and account number.");
-    } finally {
-      setResolvingAccount(false);
-    }
-  }
-
-  async function applyForDistributorAccount(event) {
-    event.preventDefault();
-    try {
-      const response = await applyForDistributor(distributorApplication);
-      const updatedUser = {
-        ...user,
-        distributorStatus: "pending",
-        distributorBusinessName: distributorApplication.businessName,
-        phone: distributorApplication.phone,
-        distributorPickupAddress: distributorApplication.pickupAddress,
-        distributorDeliveryCoverage: distributorApplication.deliveryCoverage,
-        distributorBankName: distributorApplication.bankName,
-        distributorAccountName: distributorApplication.accountName,
-        distributorAccountNumber: distributorApplication.accountNumber,
-        distributorApplicationNote: distributorApplication.note,
-      };
-      setUser(updatedUser);
-      setAuthenticatedUser(updatedUser);
-      setDistributorMessage(response.message || "Your distributor application is pending admin approval.");
-      setShowDistributorForm(false);
-    } catch (error) {
-      console.error(error);
-      setDistributorMessage(error.message || "Unable to submit your distributor application.");
-    }
-  }
-
   async function completePayment(orderId) {
     try {
       const response = await completePendingPayment(orderId);
       window.location.href = response.authorization_url;
     } catch (error) {
-      setDistributorMessage(error.message || "Unable to restart payment. Please try again.");
+      setNotice(error.message || "Unable to restart payment. Please try again.");
     }
   }
 
@@ -156,7 +53,7 @@ export default function Dashboard() {
       await confirmPublisherOrderPayment(orderId, token);
       setPublisherOrders((current) => current.filter((order) => order._id !== orderId));
     } catch (error) {
-      setDistributorMessage(error.message || "Unable to confirm this customer payment.");
+      setNotice(error.message || "Unable to confirm this customer payment.");
     }
   }
 
@@ -219,35 +116,8 @@ export default function Dashboard() {
           </button>
           <button onClick={() => (window.location.href = "/publish-with-us")}>Publish a book with RESYIN</button>
         </div>
-        {distributorMessage && <p className="inline-toast success">{distributorMessage}</p>}
+        {notice && <p className="inline-toast success">{notice}</p>}
         {publisherOrders.length > 0 && <section className="content-card publisher-orders"><h2>Publisher payment confirmations</h2><p className="muted">Confirm each direct payment after checking your bank account. Digital downloads and fulfilment remain locked until confirmation.</p>{publisherOrders.map((order) => <article key={order._id}><strong>Order #{order._id.slice(-6).toUpperCase()}</strong><span>{order.items.filter((item) => item.publisherId === String(user?._id)).map((item) => `${item.quantity} × ${item.name}`).join(", ")}</span><span>{order.paymentInstructions}</span><button type="button" className="primary" onClick={() => confirmPublisherPayment(order._id)}>Confirm customer payment</button></article>)}</section>}
-        {user?.distributorStatus === "pending" && <p className="muted">Your application has been submitted. An RESYIN administrator must approve it before you can access the Distributor Dashboard.</p>}
-        {showDistributorForm && user?.distributorStatus !== "pending" && (
-          <section ref={distributorFormRef} className="content-card distributor-application">
-            <div>
-              <p className="eyebrow">Distributor application</p>
-              <h2>Tell us how you will serve customers</h2>
-              <p className="muted">Buy at distributor prices, sell through your own RESYIN link, and manage your available stock after approval.</p>
-            </div>
-            <form onSubmit={applyForDistributorAccount} className="form distributor-application-form">
-              <div className="form-grid">
-                <label>Business or shop name<input name="businessName" value={distributorApplication.businessName} onChange={updateDistributorApplication} required /></label>
-                <label>Phone number<input name="phone" type="tel" value={distributorApplication.phone} onChange={updateDistributorApplication} required /></label>
-                <label className="form-grid-full">Pickup address<input name="pickupAddress" value={distributorApplication.pickupAddress} onChange={updateDistributorApplication} required /></label>
-                <label className="form-grid-full">Delivery areas <span className="muted">(optional)</span><input name="deliveryCoverage" value={distributorApplication.deliveryCoverage} onChange={updateDistributorApplication} placeholder="For example: Ibadan and nearby areas" /></label>
-                <label>Bank name<BankSelect id="distributor-application-bank" banks={banks} value={distributorApplication.bankCode} onChange={chooseDistributorBank} required /></label>
-                <label>Account number<input name="accountNumber" inputMode="numeric" value={distributorApplication.accountNumber} onChange={updateDistributorApplication} maxLength="10" required /></label>
-                <label>Verified account name<input value={distributorApplication.accountName} readOnly placeholder="Verify account to see the name" required /></label>
-                <div className="form-grid-full"><button type="button" onClick={verifyDistributorAccount} disabled={resolvingAccount || !distributorApplication.bankCode || distributorApplication.accountNumber.length !== 10}>{resolvingAccount ? "Verifying account…" : "Verify account name"}</button></div>
-                <label className="form-grid-full">Anything else we should know? <span className="muted">(optional)</span><textarea name="note" value={distributorApplication.note} onChange={updateDistributorApplication} rows="3" placeholder="Describe your customer base or fulfilment plan" /></label>
-              </div>
-              <div className="form-actions">
-                <button className="primary" type="submit" disabled={!distributorApplication.accountName}>Submit application for review</button>
-                <button type="button" onClick={() => setShowDistributorForm(false)}>Cancel</button>
-              </div>
-            </form>
-          </section>
-        )}
 
         {/* Account Information */}
         <div className="profile-info-grid">

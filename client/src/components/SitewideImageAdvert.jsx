@@ -11,7 +11,7 @@ export default function SitewideImageAdvert() {
   const [adverts, setAdverts] = useState([]);
   const [index, setIndex] = useState(0);
   const [dismissed, setDismissed] = useState(() => sessionStorage.getItem("sitewideImageAdvertDismissed") === "true");
-  const isPrivateArea = location.pathname.startsWith("/admin") || location.pathname.startsWith("/dashboard") || location.pathname.startsWith("/distributor") || hiddenPaths.includes(location.pathname);
+  const isPrivateArea = location.pathname.startsWith("/admin") || location.pathname.startsWith("/dashboard") || hiddenPaths.includes(location.pathname);
 
   useEffect(() => {
     getTestimonials(false).then((items) => {

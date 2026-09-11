@@ -7,6 +7,14 @@ export default function ProductCard({ product }) {
   const isOnSale = product.salePrice != null && Number(product.salePrice) < Number(product.price);
   const price = isOnSale ? product.salePrice : product.price;
   const inStock = Number(product.stock || 0) > 0;
+  const availableFormats = Array.isArray(product.editions)
+    ? product.editions
+        .filter((edition) => edition && edition.format)
+        .map((edition) => ({
+          format: edition.format,
+          label: edition.label || edition.format,
+        }))
+    : [];
 
   useEffect(() => setImageFailed(false), [product.coverImage]);
 
@@ -52,34 +60,37 @@ export default function ProductCard({ product }) {
       <div className="card-body">
         <span className="store-book-category">{product.category || "Book"}</span>
         <h3>{product.name}</h3>
-        {(product.author || product.brand) && <Link className="store-book-author" onClick={(event) => event.stopPropagation()} to={`/collection?author=${encodeURIComponent(product.author || product.brand)}`}>by {product.author || product.brand}</Link>}
 
-        {product.shortDescription && (
-          <div className="card-description-block">
-            <p
-              className="muted card-short-description card-clickable-description"
-            >
-              {product.shortDescription}
-            </p>
+        {(product.author || product.brand) && (
+          <Link
+            className="store-book-author"
+            onClick={(event) => event.stopPropagation()}
+            to={`/collection?author=${encodeURIComponent(product.author || product.brand)}`}
+          >
+            by {product.author || product.brand}
+          </Link>
+        )}
+
+        {availableFormats.length > 0 && (
+          <div className="book-format-list" aria-label="Available formats">
+            {availableFormats.map((entry) => (
+              <span key={`${product._id}-${entry.format}`} className="book-format-pill">
+                {entry.label}
+              </span>
+            ))}
           </div>
         )}
 
         <div className="card-price-block">
           <div className="card-price-row">
-            <span className="card-price-label">Book price</span>
             <span className="card-price">₦{Number(price || 0).toLocaleString()}</span>
           </div>
 
           {isOnSale && <small className="card-original-price">Was ₦{Number(product.price).toLocaleString()}</small>}
 
           <div className={`card-stock ${inStock ? "in-stock" : "out-of-stock"}`}>
-            {inStock ? "Available to order" : "Currently unavailable"}
+            {inStock ? "Available" : "Unavailable"}
           </div>
-        </div>
-
-        <div className="card-actions">
-          <button type="button" className="resyin-card-action" onClick={(event) => { event.stopPropagation(); openBook(); }}>View book</button>
-          <button className="wa resyin-card-action" onClick={(event) => { event.stopPropagation(); window.open(`mailto:info@resyinpublications.com?subject=Book enquiry: ${encodeURIComponent(product.name)}`, "_blank"); }}>Enquire</button>
         </div>
       </div>
     </article>
