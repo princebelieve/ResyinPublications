@@ -75,6 +75,11 @@ export default function ProductDetails() {
   }, []);
 
   const lightboxItems = [
+    ...(product?.coverImage ? [{
+      image: product.coverImage,
+      title: product.name,
+      description: product.fullDescription || product.shortDescription || "",
+    }] : []),
     ...(product?.gallery || []).map((img, index) => ({
       image: img,
       title: product?.name || `Image ${index + 1}`,
@@ -133,6 +138,15 @@ export default function ProductDetails() {
             src={product.coverImage}
             alt={product.name}
             className="product-detail-image"
+            role="button"
+            tabIndex={0}
+            onClick={() => setLightboxIndex(0)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                setLightboxIndex(0);
+              }
+            }}
           />
 
           <div className="product-detail-content">
@@ -420,7 +434,15 @@ export default function ProductDetails() {
                 src={img}
                 alt={`${product.name}-${index}`}
                 className="gallery-thumb"
-                onClick={() => setLightboxIndex(index)}
+                role="button"
+                tabIndex={0}
+                onClick={() => setLightboxIndex(index + 1)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    setLightboxIndex(index + 1);
+                  }
+                }}
               />
             ))}
           </div>
@@ -438,9 +460,15 @@ export default function ProductDetails() {
                       src={piece.image}
                       alt={piece.name}
                       className="piece-image"
-                      onClick={() =>
-                        setLightboxIndex((product.gallery?.length || 0) + index)
-                      }
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setLightboxIndex((product.gallery?.length || 0) + index + 1)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          setLightboxIndex((product.gallery?.length || 0) + index + 1);
+                        }
+                      }}
                     />
                   )}
 

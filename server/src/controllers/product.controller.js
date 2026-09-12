@@ -232,6 +232,10 @@ async function createProduct(req, res) {
     const isSubadmin = req.user?.role === "subadmin";
     const isPublisherSubmission = req.publisherSubmission === true;
     const pricedEditions = parsedEditions.filter((edition) => Number.isFinite(Number(edition.price)) && Number(edition.price) > 0);
+    const physicalFormats = new Set(["paperback", "hardcover"]);
+    const physicalStock = parsedEditions
+      .filter((edition) => physicalFormats.has(String(edition.format).toLowerCase()))
+      .reduce((total, edition) => total + Number(edition.stock || 0), 0);
     const catalogPrice = isPublisherSubmission
       ? (pricedEditions.length ? Math.min(...pricedEditions.map((edition) => Number(edition.price))) : 0)
       : Number(price || 0);
@@ -258,7 +262,7 @@ async function createProduct(req, res) {
 
       price: catalogPrice,
 
-      stock: Number(stock || 0),
+      stock: physicalStock,
 
       featured: featured === "true" || featured === true,
 
@@ -266,7 +270,7 @@ async function createProduct(req, res) {
 
       sku: generatedSku,
 
-      inStock: Number(stock || 0) > 0,
+      inStock: physicalStock > 0,
 
       salePrice: salePrice === "" || salePrice === undefined ? null : Number(salePrice),
       distributorPrice: distributorPrice === "" || distributorPrice === undefined ? null : Number(distributorPrice),
@@ -450,6 +454,11 @@ async function updateProduct(req, res) {
         return res.status(400).json({ message: "Book formats could not be read. Please try the update again." });
       }
       product.editions = requestedEditions;
+      const physicalFormats = new Set(["paperback", "hardcover"]);
+      product.stock = requestedEditions
+        .filter((edition) => physicalFormats.has(String(edition.format).toLowerCase()))
+        .reduce((total, edition) => total + Number(edition.stock || 0), 0);
+      product.inStock = product.stock > 0;
     }
     assertDigitalFilesMatchFormats(files, requestedEditions);
     if (gtin !== undefined) product.gtin = gtin;

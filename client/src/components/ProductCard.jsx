@@ -30,7 +30,11 @@ export default function ProductCard({ product }) {
   const promoPrice = lowestEdition?.promoPrice ?? validProductPromoPrice;
   const hasPromoPrice = promoPrice != null && promoPrice > 0 && promoPrice < regularPrice;
   const price = hasPromoPrice ? promoPrice : regularPrice;
-  const inStock = Number(product.stock || 0) > 0;
+  const hasDigitalEdition = (product.editions || []).some((edition) =>
+    ["pdf", "epub"].includes(String(edition.format).toLowerCase())
+    && Boolean(product.digitalFiles?.[edition.format]?.key),
+  );
+  const inStock = Number(product.stock || 0) > 0 || hasDigitalEdition;
 
   useEffect(() => setImageFailed(false), [product.coverImage]);
 
