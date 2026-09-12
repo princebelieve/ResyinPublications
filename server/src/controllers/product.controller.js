@@ -206,6 +206,17 @@ async function createProduct(req, res) {
 
     const isSubadmin = req.user?.role === "subadmin";
     const isPublisherSubmission = req.publisherSubmission === true;
+    let parsedEditions = [];
+    try {
+      parsedEditions = editions ? JSON.parse(editions) : [];
+    } catch {
+      return res.status(400).json({ message: "Book formats could not be read. Please try the upload again." });
+    }
+
+    const pricedEditions = parsedEditions.filter((edition) => Number.isFinite(Number(edition.price)) && Number(edition.price) > 0);
+    const catalogPrice = isPublisherSubmission
+      ? (pricedEditions.length ? Math.min(...pricedEditions.map((edition) => Number(edition.price))) : 0)
+      : Number(price || 0);
 
     const adminUsers = await User.find({ role: "admin" }).select("_id");
     const adminIds = adminUsers.map((admin) => admin._id);
@@ -227,7 +238,7 @@ async function createProduct(req, res) {
 
       digitalFiles,
 
-      price: Number(price || 0),
+      price: catalogPrice,
 
       stock: Number(stock || 0),
 
@@ -247,7 +258,7 @@ async function createProduct(req, res) {
       vendor: vendor || "",
       publisherId: isPublisherSubmission ? req.user._id : publisherId || null,
       platformCommissionRate: Math.min(100, Math.max(0, Number(platformCommissionRate ?? 10))),
-      editions: editions ? JSON.parse(editions) : [],
+      editions: parsedEditions,
       gtin: gtin || "",
       nafdacNumber: nafdacNumber || "",
       googleProductCategory: googleProductCategory || "",
