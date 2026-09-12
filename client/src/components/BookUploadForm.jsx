@@ -108,6 +108,14 @@ export default function BookUploadForm({ onSubmit, editingProduct = null }) {
     if (!author) { setMessage("Enter the author name."); return; }
     if (!hasCover) { setMessage("Add a cover image for the book."); return; }
     if (!formats.length) { setMessage("Select at least one available book format."); return; }
+    if (pdfFile && !formats.some((item) => item.format === "pdf")) {
+      setMessage("Your PDF file cannot be uploaded because PDF is not selected under Available formats. Select PDF, or remove the file.");
+      return;
+    }
+    if (epubFile && !formats.some((item) => item.format === "epub")) {
+      setMessage("Your EPUB file cannot be uploaded because EPUB is not selected under Available formats. Select EPUB, or remove the file.");
+      return;
+    }
     setSaving(true); setMessage("");
     try {
       const data = new FormData();

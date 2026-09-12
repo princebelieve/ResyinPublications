@@ -5,6 +5,7 @@ const { createProduct } = require("../controllers/product.controller");
 const PublisherSubscriptionSettings = require("../models/PublisherSubscriptionSettings");
 const User = require("../models/User");
 const Order = require("../models/Order");
+const Product = require("../models/Product");
 const PublisherSubscriptionPayment = require("../models/PublisherSubscriptionPayment");
 const paystack = require("../services/paystack");
 const { createNotification, notifyAdminTeam } = require("../services/notification.service");
@@ -119,6 +120,21 @@ router.post("/orders/:id/confirm-payment", protect, async (req, res) => {
     }
   });
   if (confirmed > 0) {
+    for (const item of order.items) {
+      if (item.publisherId !== String(req.user._id)) continue;
+      const product = await Product.findById(item.productId);
+      if (!product) continue;
+      const edition = product.editions?.find((candidate) => candidate.format === (item.format || item.editionKey));
+      if (edition && !["pdf", "epub"].includes(String(edition.format).toLowerCase())) {
+        edition.stock = Math.max(0, Number(edition.stock || 0) - Number(item.quantity || 0));
+        product.stock = (product.editions || [])
+          .filter((candidate) => ["paperback", "hardcover"].includes(String(candidate.format).toLowerCase()))
+          .reduce((total, candidate) => total + Number(candidate.stock || 0), 0);
+        product.inStock = product.stock > 0;
+      }
+      product.soldCount = Number(product.soldCount || 0) + Number(item.quantity || 0);
+      await product.save();
+    }
     order.paymentStatus = "paid";
     order.paidAt = order.paidAt || new Date();
     order.manualTransferStatus = "verified";

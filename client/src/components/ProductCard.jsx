@@ -4,8 +4,19 @@ import { Link, useNavigate } from "react-router-dom";
 export default function ProductCard({ product }) {
   const navigate = useNavigate();
   const [imageFailed, setImageFailed] = useState(false);
-  const isOnSale = product.salePrice != null && Number(product.salePrice) < Number(product.price);
-  const price = isOnSale ? product.salePrice : product.price;
+  const pricedEditions = (product.editions || [])
+    .filter((edition) => Number(edition.price) > 0)
+    .map((edition) => ({
+      basePrice: Number(edition.price),
+      salePrice: edition.salePrice != null && Number(edition.salePrice) < Number(edition.price)
+        ? Number(edition.salePrice)
+        : null,
+    }));
+  const lowestEdition = pricedEditions.sort((left, right) => (left.salePrice ?? left.basePrice) - (right.salePrice ?? right.basePrice))[0];
+  const basePrice = lowestEdition?.basePrice ?? Number(product.price || 0);
+  const salePrice = lowestEdition?.salePrice ?? (product.salePrice != null && Number(product.salePrice) < basePrice ? Number(product.salePrice) : null);
+  const isOnSale = salePrice != null;
+  const price = salePrice ?? basePrice;
   const inStock = Number(product.stock || 0) > 0;
 
   useEffect(() => setImageFailed(false), [product.coverImage]);
@@ -66,11 +77,13 @@ export default function ProductCard({ product }) {
 
         <div className="card-price-block">
           <div className="card-price-row">
-            <span className="card-price-label">Book price</span>
+            <span className="card-price-label">{pricedEditions.length > 1 ? "From" : "Book price"}</span>
             <span className="card-price">₦{Number(price || 0).toLocaleString()}</span>
           </div>
 
           {isOnSale && <small className="card-original-price">Was ₦{Number(product.price).toLocaleString()}</small>}
+
+          {isOnSale && <small className="card-original-price">Regular price: {basePrice.toLocaleString()}</small>}
 
           <div className={`card-stock ${inStock ? "in-stock" : "out-of-stock"}`}>
             {inStock ? "Available to order" : "Currently unavailable"}

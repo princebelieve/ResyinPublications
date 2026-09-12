@@ -1,7 +1,7 @@
 // server/src/controllers/product.controller.js
 const Product = require("../models/Product");
 const User = require("../models/User");
-const { uploadToR2, uploadPrivateBookFile, deleteFromR2 } = require("../config/r2");
+const { uploadToR2, uploadPrivateBookFile, deleteFromR2, deletePrivateBookFile } = require("../config/r2");
 const {
   createNotification,
   notifyAdmins,
@@ -45,6 +45,20 @@ function assertProductImages(files) {
   }
 }
 
+function assertDigitalFilesMatchFormats(files, editions) {
+  const formats = new Set((editions || []).map((edition) => String(edition.format || "").toLowerCase()));
+  if (files.pdfFile?.length && !formats.has("pdf")) {
+    const error = new Error("Select the PDF format before uploading a PDF file.");
+    error.statusCode = 400;
+    throw error;
+  }
+  if (files.epubFile?.length && !formats.has("epub")) {
+    const error = new Error("Select the EPUB format before uploading an EPUB file.");
+    error.statusCode = 400;
+    throw error;
+  }
+}
+
 async function deleteProductMedia(product) {
   const mediaUrls = [...new Set([product.coverImage, ...(product.gallery || [])].filter(Boolean))];
   if (!mediaUrls.length) return [];
@@ -71,13 +85,16 @@ async function permanentlyDeleteProduct(product) {
   await Product.findByIdAndDelete(product._id);
 
   const failedMediaDeletes = await deleteProductMedia(product);
-  if (failedMediaDeletes.length) {
+  const privateKeys = [product.digitalFiles?.pdf?.key, product.digitalFiles?.epub?.key].filter(Boolean);
+  const privateDeletes = await Promise.allSettled(privateKeys.map(deletePrivateBookFile));
+  const failedPrivateDeletes = privateDeletes.filter((result) => result.status === "rejected");
+  if (failedMediaDeletes.length || failedPrivateDeletes.length) {
     console.error(
-      `Deleted product ${product._id}, but could not remove ${failedMediaDeletes.length} media file(s) from R2.`,
+      `Deleted product ${product._id}, but could not remove ${failedMediaDeletes.length + failedPrivateDeletes.length} file(s) from R2.`,
     );
   }
 
-  return failedMediaDeletes.length;
+  return failedMediaDeletes.length + failedPrivateDeletes.length;
 }
 
 async function getProducts(req, res) {
@@ -180,6 +197,14 @@ async function createProduct(req, res) {
     assertProductImages(files);
     await assertUniqueProductName(name);
 
+    let parsedEditions = [];
+    try {
+      parsedEditions = editions ? JSON.parse(editions) : [];
+    } catch {
+      return res.status(400).json({ message: "Book formats could not be read. Please try the upload again." });
+    }
+    assertDigitalFilesMatchFormats(files, parsedEditions);
+
     // COVER IMAGE
     let coverImage = "";
 
@@ -206,13 +231,6 @@ async function createProduct(req, res) {
 
     const isSubadmin = req.user?.role === "subadmin";
     const isPublisherSubmission = req.publisherSubmission === true;
-    let parsedEditions = [];
-    try {
-      parsedEditions = editions ? JSON.parse(editions) : [];
-    } catch {
-      return res.status(400).json({ message: "Book formats could not be read. Please try the upload again." });
-    }
-
     const pricedEditions = parsedEditions.filter((edition) => Number.isFinite(Number(edition.price)) && Number(edition.price) > 0);
     const catalogPrice = isPublisherSubmission
       ? (pricedEditions.length ? Math.min(...pricedEditions.map((edition) => Number(edition.price))) : 0)
@@ -424,7 +442,16 @@ async function updateProduct(req, res) {
     if (vendor !== undefined) product.vendor = vendor;
     if (publisherId !== undefined) product.publisherId = publisherId || null;
     if (platformCommissionRate !== undefined) product.platformCommissionRate = Math.min(100, Math.max(0, Number(platformCommissionRate || 0)));
-    if (editions !== undefined) product.editions = JSON.parse(editions);
+    let requestedEditions = product.editions || [];
+    if (editions !== undefined) {
+      try {
+        requestedEditions = JSON.parse(editions);
+      } catch {
+        return res.status(400).json({ message: "Book formats could not be read. Please try the update again." });
+      }
+      product.editions = requestedEditions;
+    }
+    assertDigitalFilesMatchFormats(files, requestedEditions);
     if (gtin !== undefined) product.gtin = gtin;
     if (nafdacNumber !== undefined) product.nafdacNumber = nafdacNumber;
     if (googleProductCategory !== undefined) product.googleProductCategory = googleProductCategory;
@@ -464,8 +491,16 @@ async function updateProduct(req, res) {
       product.digitalFiles.pdf = product.digitalFiles.pdf || {};
       product.digitalFiles.epub = product.digitalFiles.epub || {};
     }
-    if (files.pdfFile?.[0]) product.digitalFiles.pdf = await uploadPrivateBookFile(files.pdfFile[0], "pdf");
-    if (files.epubFile?.[0]) product.digitalFiles.epub = await uploadPrivateBookFile(files.epubFile[0], "epub");
+    if (files.pdfFile?.[0]) {
+      const oldKey = product.digitalFiles.pdf?.key;
+      product.digitalFiles.pdf = await uploadPrivateBookFile(files.pdfFile[0], "pdf");
+      if (oldKey && oldKey !== product.digitalFiles.pdf.key) deletePrivateBookFile(oldKey).catch((error) => console.warn("Could not delete replaced PDF:", error.message));
+    }
+    if (files.epubFile?.[0]) {
+      const oldKey = product.digitalFiles.epub?.key;
+      product.digitalFiles.epub = await uploadPrivateBookFile(files.epubFile[0], "epub");
+      if (oldKey && oldKey !== product.digitalFiles.epub.key) deletePrivateBookFile(oldKey).catch((error) => console.warn("Could not delete replaced EPUB:", error.message));
+    }
 
     await product.save();
 

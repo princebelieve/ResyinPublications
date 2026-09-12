@@ -67,6 +67,11 @@ async function createPrivateBookDownloadUrl(key, fileName) {
   }), { expiresIn: 10 * 60 });
 }
 
+async function deletePrivateBookFile(key) {
+  if (!key) return;
+  await s3.send(new DeleteObjectCommand({ Bucket: digitalBucket(), Key: key }));
+}
+
 function safeFileName(fileName = "upload") {
   return fileName.replace(/[^a-zA-Z0-9._-]/g, "-").replace(/-+/g, "-").slice(0, 120) || "upload";
 }
@@ -120,4 +125,4 @@ async function deleteFromR2(fileUrl) {
   return true;
 }
 
-module.exports = { uploadToR2, uploadBufferToR2, uploadPrivateBookFile, createPrivateBookDownloadUrl, createPresignedContentUpload, deleteFromR2 };
+module.exports = { uploadToR2, uploadBufferToR2, uploadPrivateBookFile, createPrivateBookDownloadUrl, createPresignedContentUpload, deletePrivateBookFile, deleteFromR2 };

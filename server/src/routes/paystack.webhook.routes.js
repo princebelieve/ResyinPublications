@@ -156,8 +156,16 @@ router.post("/", async (req, res) => {
         const edition = product.editions?.find((candidate) => candidate.format === (item.format || item.editionKey));
         if (edition) {
           edition.stock = Math.max(0, Number(edition.stock || 0) - item.quantity);
+          // Keep legacy product-level availability in sync with physical
+          // editions so catalog cards and low-stock reporting do not disagree.
+          const physicalFormats = new Set(["paperback", "hardcover"]);
+          product.stock = (product.editions || [])
+            .filter((candidate) => physicalFormats.has(String(candidate.format).toLowerCase()))
+            .reduce((total, candidate) => total + Number(candidate.stock || 0), 0);
+          product.inStock = product.stock > 0;
         } else {
           product.stock = Math.max(0, product.stock - item.quantity);
+          product.inStock = product.stock > 0;
         }
 
         product.soldCount = (product.soldCount || 0) + item.quantity;
