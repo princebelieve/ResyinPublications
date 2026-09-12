@@ -42,7 +42,7 @@ export default function Dashboard() {
   async function completePayment(orderId) {
     try {
       const response = await completePendingPayment(orderId);
-      window.location.href = response.authorization_url;
+      window.location.assign(response.authorization_url);
     } catch (error) {
       setNotice(error.message || "Unable to restart payment. Please try again.");
     }
@@ -102,19 +102,19 @@ export default function Dashboard() {
 
         {/* Quick Actions */}
         <div className="dashboard-actions">
-          <button onClick={() => (window.location.href = "/collection")}>
+          <button onClick={() => window.location.assign("/collection")}>
             Shop Books
           </button>
-          <button onClick={() => (window.location.href = "/cart")}>
+          <button onClick={() => window.location.assign("/cart")}>
             View Cart
           </button>
-          <button onClick={() => (window.location.href = "/checkout")}>
+          <button onClick={() => window.location.assign("/checkout")}>
             Continue Checkout
           </button>
-          <button onClick={() => (window.location.href = "/profile")}>
+          <button onClick={() => window.location.assign("/profile")}>
             Edit Profile
           </button>
-          <button onClick={() => (window.location.href = "/publish-with-us")}>Publish a book with RESYIN</button>
+          <button onClick={() => window.location.assign("/publish-with-us")}>Publish a book with RESYIN</button>
         </div>
         {notice && <p className="inline-toast success">{notice}</p>}
         {publisherOrders.length > 0 && <section className="content-card publisher-orders"><h2>Publisher payment confirmations</h2><p className="muted">Confirm each direct payment after checking your bank account. Digital downloads and fulfilment remain locked until confirmation.</p>{publisherOrders.map((order) => <article key={order._id}><strong>Order #{order._id.slice(-6).toUpperCase()}</strong><span>{order.items.filter((item) => item.publisherId === String(user?._id)).map((item) => `${item.quantity} × ${item.name}`).join(", ")}</span><span>{order.paymentInstructions}</span><button type="button" className="primary" onClick={() => confirmPublisherPayment(order._id)}>Confirm customer payment</button></article>)}</section>}
@@ -155,7 +155,7 @@ export default function Dashboard() {
               No orders yet. Start shopping!
             </p>
             <button
-              onClick={() => (window.location.href = "/collection")}
+              onClick={() => window.location.assign("/collection")}
               style={{
                 marginTop: 15,
                 padding: "12px 24px",

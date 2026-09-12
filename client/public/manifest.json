@@ -1,6 +1,7 @@
 {
   "name": "RESYIN Publications",
   "short_name": "Resyin",
+  "id": "/",
   "description": "RESYIN Publications is a digital bookstore and publishing platform for meaningful reading and author-focused discovery.",
   "start_url": "/",
   "scope": "/",

@@ -2,13 +2,13 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Menu, X, Search, ShoppingCart } from "lucide-react";
-import { Download } from "lucide-react";
 import useAuth from "../context/AuthContext";
 import useClickOutside from "../hooks/useClickOutside";
 import { useCart } from "../context/CartContext";
 import { useNotifications } from "../context/NotificationContext";
 import NotificationDropdown from "./NotificationDropdown";
 import NotificationBell from "./NotificationBell";
+import PwaInstallButton from "./PwaInstallButton";
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -16,7 +16,7 @@ export default function Navbar() {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
 
-  const { isLoggedIn, isAdmin, logout, user } = useAuth();
+  const { isLoggedIn, isAdmin, logout } = useAuth();
   const { cartCount } = useCart();
   const { unreadCount } = useNotifications();
 
@@ -26,19 +26,11 @@ export default function Navbar() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isInstalled, setIsInstalled] = useState(false);
   const [isMobileScreen, setIsMobileScreen] = useState(false);
+  const [useLegacyInstallButton] = useState(false);
 
-  // Detect PWA installability and iOS state
   useEffect(() => {
-    const handler = (e) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-      // store globally so other components can read it
-      window.__deferredPrompt = e;
-    };
-
     const installedHandler = () => setIsInstalled(true);
 
-    window.addEventListener("beforeinstallprompt", handler);
     window.addEventListener("appinstalled", installedHandler);
 
     // detect standalone (iOS added to home screen)
@@ -50,21 +42,17 @@ export default function Navbar() {
     }
 
     return () => {
-      window.removeEventListener("beforeinstallprompt", handler);
       window.removeEventListener("appinstalled", installedHandler);
     };
   }, []);
 
   useEffect(() => {
     const updateMobile = () => {
-      if (window.matchMedia) {
-        setIsMobileScreen(window.matchMedia("(max-width: 900px)").matches);
-      }
+      setIsMobileScreen(window.matchMedia("(max-width: 900px)").matches);
     };
 
     updateMobile();
     window.addEventListener("resize", updateMobile);
-
     return () => window.removeEventListener("resize", updateMobile);
   }, []);
 
@@ -145,6 +133,8 @@ export default function Navbar() {
         <div className="nav-actions">
           <NotificationDropdown />
 
+          <PwaInstallButton />
+
           {isLoggedIn && (
             <button
               type="button"
@@ -172,8 +162,9 @@ export default function Navbar() {
             onClick={() => navigate("/notifications")}
           />
         )}
+        <PwaInstallButton />
         {/* PWA install icon (mobile only, only when not installed) */}
-        {isMobileScreen && !isInstalled && (
+        {useLegacyInstallButton && isMobileScreen && !isInstalled && (
           <button
             type="button"
             className="install-btn"

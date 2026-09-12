@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { createElement, useState } from "react";
 import { ArrowRight, BookOpen, Building2, Mail, MessageCircle, Package, Send } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -52,9 +52,9 @@ export default function Contact() {
         <section className="resyin-contact-content section">
           <div className="container">
             <div className="resyin-contact-topics">
-              {contactTopics.map(({ icon: Icon, title, text }) => (
+              {contactTopics.map(({ icon, title, text }) => (
                 <article className="resyin-contact-topic" key={title}>
-                  <Icon size={21} aria-hidden="true" />
+                  {createElement(icon, { size: 21, "aria-hidden": true })}
                   <h2>{title}</h2>
                   <p>{text}</p>
                   <ArrowRight size={17} aria-hidden="true" />

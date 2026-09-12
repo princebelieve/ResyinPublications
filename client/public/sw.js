@@ -1,32 +1,47 @@
-// eslint-disable-next-line no-unused-vars
+const CACHE_NAME = "resyin-app-v2";
+const APP_SHELL = ["/", "/manifest.json", "/icon-192.png", "/icon-512.png", "/logo.png"];
+
 self.addEventListener("install", (event) => {
-  self.skipWaiting();
-});
-
-self.addEventListener("activate", (event) => {
-  event.waitUntil(self.clients.claim());
-});
-
-self.addEventListener("fetch", (event) => {
-  if (event.request.method !== "GET") {
-    return;
-  }
-
-  event.respondWith(
-    fetch(event.request, {
-      cache: "no-store",
-      credentials: "same-origin",
-    }),
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.addAll(APP_SHELL))
+      .then(() => self.skipWaiting()),
   );
 });
 
-/**
- * Handle incoming push notifications
- */
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches.keys()
+      .then((keys) => Promise.all(keys
+        .filter((key) => key !== CACHE_NAME)
+        .map((key) => caches.delete(key))))
+      .then(() => self.clients.claim()),
+  );
+});
+
+self.addEventListener("fetch", (event) => {
+  if (event.request.method !== "GET") return;
+
+  event.respondWith((async () => {
+    try {
+      const response = await fetch(event.request);
+      if (response.ok && new URL(event.request.url).origin === self.location.origin) {
+        const cache = await caches.open(CACHE_NAME);
+        cache.put(event.request, response.clone());
+      }
+      return response;
+    } catch {
+      const cached = await caches.match(event.request);
+      if (cached) return cached;
+      if (event.request.mode === "navigate") return caches.match("/");
+      return Response.error();
+    }
+  })());
+});
+
 self.addEventListener("push", (event) => {
   try {
     const data = event.data ? event.data.json() : {};
-
     const options = {
       body: data.body || "You have a new notification",
       icon: data.icon || "/icon-192.png",
@@ -36,63 +51,23 @@ self.addEventListener("push", (event) => {
       data: data.data || {},
     };
 
-    const backgroundTasks = [
-      self.registration.showNotification(
-        data.title || "RESYIN Publications",
-        options,
-      ),
-    ];
-
-    // The Badging API is exposed on WorkerNavigator (`self.navigator`) in a
-    // service worker, not on ServiceWorkerRegistration. This lets the badge
-    // update when the installed PWA has no open window.
+    const tasks = [self.registration.showNotification(data.title || "RESYIN Publications", options)];
     if (typeof data.data?.badgeCount === "number" && self.navigator) {
       const count = data.data.badgeCount;
-      if (count > 0 && typeof self.navigator.setAppBadge === "function") {
-        backgroundTasks.push(self.navigator.setAppBadge(count));
-      } else if (count <= 0 && typeof self.navigator.clearAppBadge === "function") {
-        backgroundTasks.push(self.navigator.clearAppBadge());
-      }
+      if (count > 0 && typeof self.navigator.setAppBadge === "function") tasks.push(self.navigator.setAppBadge(count));
+      if (count <= 0 && typeof self.navigator.clearAppBadge === "function") tasks.push(self.navigator.clearAppBadge());
     }
-
-    event.waitUntil(Promise.all(backgroundTasks));
+    event.waitUntil(Promise.all(tasks));
   } catch (error) {
     console.error("Error handling push event:", error);
   }
 });
 
-/**
- * Handle notification clicks
- */
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-
-  const link = event.notification.data?.link || "/";
-  const targetUrl = new URL(link, self.location.origin).href;
-
-  event.waitUntil(
-    self.clients
-      .matchAll({ type: "window", includeUncontrolled: true })
-      .then((windowClients) => {
-        // Check if there's already a window/tab with the target URL
-        for (let i = 0; i < windowClients.length; i++) {
-          const client = windowClients[i];
-          if (client.url === targetUrl && "focus" in client) {
-            return client.focus();
-          }
-        }
-
-        // If not, open a new window
-        if (self.clients.openWindow) {
-          return self.clients.openWindow(targetUrl);
-        }
-      }),
-  );
-});
-
-/**
- * Handle notification close
- */
-self.addEventListener("notificationclose", (event) => {
-  console.log("Notification closed:", event.notification.tag);
+  const targetUrl = new URL(event.notification.data?.link || "/", self.location.origin).href;
+  event.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+    const existing = clients.find((client) => client.url === targetUrl);
+    return existing?.focus() || self.clients.openWindow?.(targetUrl);
+  }));
 });

@@ -176,7 +176,6 @@ function PublisherSubmissionForm() {
       };
 
       setUser(updated);
-      refreshUser?.(updated);
       setMessage(result.message);
     } catch (error) {
       setMessage(error.message || "Unable to submit publisher application.");

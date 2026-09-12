@@ -60,6 +60,7 @@ import AdminTestimonials from "./pages/AdminTestimonials";
 import PullToRefresh from "./components/PullToRefresh";
 import Outreach from "./pages/Outreach";
 import Journey from "./pages/Journey";
+import { PwaInstallProvider } from "./context/PwaInstallContext";
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const RefundPolicy = lazy(() => import("./pages/RefundPolicy"));
 const TermsConditions = lazy(() => import("./pages/TermsConditions"));
@@ -125,9 +126,9 @@ export default function App() {
   return (
     <CartProvider>
       <NotificationProvider>
+        <PwaInstallProvider>
         <CanonicalUpdater />
         <ScrollToTop />
-        <CaptureInstallPrompt />
         <SupportAssistant />
         <PwaNotificationBanner />
         <PwaInstallBanner />
@@ -396,6 +397,7 @@ export default function App() {
             />
           </Routes>
         </Suspense>
+        </PwaInstallProvider>
       </NotificationProvider>
     </CartProvider>
   );

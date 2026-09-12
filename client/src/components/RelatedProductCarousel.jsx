@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { ArrowLeft, ArrowRight, BookOpen } from "lucide-react";
 
 export default function RelatedProductCarousel({ products = [] }) {
@@ -25,7 +25,6 @@ export default function RelatedProductCarousel({ products = [] }) {
     carouselItems.push(publisherPromo);
   }
   const [activeIndex, setActiveIndex] = useState(0);
-  const navigate = useNavigate();
 
   useEffect(() => setActiveIndex(0), [carouselItems.length]);
 
@@ -42,7 +41,6 @@ export default function RelatedProductCarousel({ products = [] }) {
   if (carouselItems.length === 0) return null;
 
   const item = carouselItems[activeIndex % carouselItems.length];
-  const isPublisherPromo = item.type === "publisher-promo";
   const itemSummary = (item.shortDescription || "")
     .replace(/\s+/g, " ")
     .trim();

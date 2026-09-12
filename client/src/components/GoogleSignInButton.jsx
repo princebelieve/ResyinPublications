@@ -63,7 +63,7 @@ export default function GoogleSignInButton({ onSuccess, onError }) {
         }
 
         setIsReady(true);
-      } catch (err) {
+      } catch {
         setError("Unable to initialize Google sign-in.");
       }
     };

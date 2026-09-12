@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Download, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { usePwaInstall } from "../context/PwaInstallContext";
 
 const benefits = [
   "Install RESYIN for one-tap access from your home screen.",
@@ -8,74 +9,46 @@ const benefits = [
   "Open RESYIN faster, with an app-like full-screen experience.",
 ];
 
-function isInstalled() {
-  return (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches)
-    || window.navigator.standalone === true;
-}
-
 export default function PwaInstallBanner() {
   const [visible, setVisible] = useState(false);
   const [dismissed, setDismissed] = useState(false);
-  const [eligible, setEligible] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [benefitIndex, setBenefitIndex] = useState(0);
   const navigate = useNavigate();
+  const { canInstall, isIOS, requestInstall } = usePwaInstall();
 
   useEffect(() => {
-    const isiOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.navigator.standalone;
-    const canInstall = () => Boolean(window.__deferredPrompt) || isiOS;
-    const showWhenAvailable = () => {
-      if (!isInstalled() && !localStorage.getItem("pwaInstallDismissed") && canInstall()) setEligible(true);
-    };
-
-    if (localStorage.getItem("pwaInstallDismissed")) setDismissed(true);
-    const timer = window.setTimeout(showWhenAvailable, 12000);
-    window.addEventListener("beforeinstallprompt", showWhenAvailable);
-    return () => {
-      window.clearTimeout(timer);
-      window.removeEventListener("beforeinstallprompt", showWhenAvailable);
-    };
-  }, []);
+    if (!canInstall || localStorage.getItem("pwaInstallDismissed")) return undefined;
+    const timer = window.setTimeout(() => setVisible(true), 12000);
+    return () => window.clearTimeout(timer);
+  }, [canInstall]);
 
   useEffect(() => {
-    if (!eligible || dismissed) return undefined;
-    let holdTimer; let leaveTimer; let waitTimer;
-    const showNext = () => {
-      setLeaving(false);
-      setVisible(true);
-      holdTimer = window.setTimeout(() => {
-        setLeaving(true);
-        leaveTimer = window.setTimeout(() => {
-          setVisible(false);
-          setBenefitIndex((current) => (current + 1) % benefits.length);
-          waitTimer = window.setTimeout(showNext, 22000);
-        }, 350);
-      }, 8000);
-    };
-    showNext();
-    return () => { window.clearTimeout(holdTimer); window.clearTimeout(leaveTimer); window.clearTimeout(waitTimer); };
-  }, [eligible, dismissed]);
+    if (!visible || dismissed) return undefined;
+    const holdTimer = window.setTimeout(() => {
+      setLeaving(true);
+      window.setTimeout(() => {
+        setVisible(false);
+        setLeaving(false);
+        setBenefitIndex((current) => (current + 1) % benefits.length);
+      }, 350);
+    }, 8000);
+    return () => window.clearTimeout(holdTimer);
+  }, [visible, dismissed]);
 
-  if (!visible || dismissed || isInstalled()) return null;
+  if (!visible || dismissed || !canInstall) return null;
 
   async function handleInstall() {
-    const deferredPrompt = window.__deferredPrompt;
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const choice = await deferredPrompt.userChoice;
-      if (choice?.outcome === "accepted") {
-        setVisible(false);
-        setEligible(false);
-        window.__deferredPrompt = null;
-      }
+    const result = await requestInstall();
+    if (result.outcome === "ios" || isIOS) {
+      navigate("/install-instructions");
       return;
     }
-    navigate("/install-instructions");
+    setVisible(false);
   }
 
   function dismiss() {
     setVisible(false);
-    setEligible(false);
     setDismissed(true);
     localStorage.setItem("pwaInstallDismissed", "true");
   }

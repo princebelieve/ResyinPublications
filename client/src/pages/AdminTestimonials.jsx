@@ -56,7 +56,6 @@ function createVideoThumbnail(file) {
 export default function AdminTestimonials() {
   const [items, setItems] = useState([]); const [form, setForm] = useState(blank); const [mediaType, setMediaType] = useState("text"); const [editing, setEditing] = useState(null); const [message, setMessage] = useState(""); const [messageType, setMessageType] = useState(""); const [uploadProgress, setUploadProgress] = useState(null); const [isSaving, setIsSaving] = useState(false);
   const uploadFetch = (url, options) => uploadFileWithProgress(url, options, setUploadProgress);
-  const fetch = uploadFetch;
   const formRef = useRef(null); const navigate = useNavigate(); const { isSubadmin } = useAuth();
   async function load() { setItems(await getAdminTestimonials(getToken())); }
   useEffect(() => { load().catch(() => { setMessageType("error"); setMessage("Unable to load content. Please refresh and try again."); }); }, []);
