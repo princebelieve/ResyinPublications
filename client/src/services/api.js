@@ -265,6 +265,7 @@ export async function completePendingPayment(orderId) {
 
 export async function submitPublisherBook(formData, token) { return apiRequest("/api/publishers/submissions", { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: formData }); }
 export async function applyAsPublisher(payload, token) { return apiRequest("/api/publishers/apply", { method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }, body: JSON.stringify(payload) }); }
+export async function renewPublisherSubscription(token) { return apiRequest("/api/publishers/subscription/renew", { method: "POST", headers: { Authorization: `Bearer ${token}` } }); }
 export async function getPendingPublisherOrders(token) { return apiRequest("/api/publishers/orders/pending", { headers: { Authorization: `Bearer ${token}` } }); }
 export async function confirmPublisherOrderPayment(orderId, token) { return apiRequest(`/api/publishers/orders/${orderId}/confirm-payment`, { method: "POST", headers: { Authorization: `Bearer ${token}` } }); }
 

@@ -148,6 +148,11 @@ const orderSchema = new mongoose.Schema(
       sparse: true,
     },
 
+    // A customer can open more than one Paystack checkout for the same unpaid
+    // order. Retaining every issued reference prevents a late payment from an
+    // earlier tab being orphaned when a retry is started.
+    paymentReferences: { type: [String], default: [] },
+
     confirmationTokenHash: { type: String, select: false },
     confirmationTokenExpires: { type: Date, select: false },
 

@@ -57,6 +57,7 @@ router.post("/:id/complete-payment", protect, async (req, res) => {
       metadata: { userId: order.userId, orderId: String(order._id), resumedPayment: true },
     });
     order.paymentReference = payment.data.data.reference;
+    order.paymentReferences = [...new Set([...(order.paymentReferences || []), payment.data.data.reference])];
     order.confirmationTokenHash = confirmationTokenHash;
     order.confirmationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
     await order.save();

@@ -6,7 +6,7 @@ import BankSelect from "../components/BankSelect";
 import BookUploadForm from "../components/BookUploadForm";
 import RequireAuth from "../components/RequireAuth";
 import useAuth from "../context/AuthContext";
-import { applyAsPublisher, getNigerianBanks, getPublicPublisherSubscriptionSettings, submitPublisherBook, updatePublisherPaymentAccount } from "../services/api";
+import { applyAsPublisher, getNigerianBanks, getPublicPublisherSubscriptionSettings, renewPublisherSubscription, submitPublisherBook, updatePublisherPaymentAccount } from "../services/api";
 
 function PublisherBankSetup() {
   const { token, user, setUser } = useAuth();
@@ -176,6 +176,10 @@ function PublisherSubmissionForm() {
       };
 
       setUser(updated);
+      if (result.authorization_url) {
+        window.location.assign(result.authorization_url);
+        return;
+      }
       setMessage(result.message);
     } catch (error) {
       setMessage(error.message || "Unable to submit publisher application.");
@@ -188,6 +192,18 @@ function PublisherSubmissionForm() {
     await submitPublisherBook(formData, token);
     window.alert("Your book has been submitted for RESYIN review.");
     window.location.href = "/publish-with-us";
+  }
+
+  async function renewSubscription() {
+    try {
+      setSaving(true);
+      const result = await renewPublisherSubscription(token);
+      window.location.assign(result.authorization_url);
+    } catch (error) {
+      setMessage(error.message || "Unable to start subscription renewal.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   if (user?.publisherStatus === "pending") {
@@ -207,6 +223,8 @@ function PublisherSubmissionForm() {
   }
 
   if (user?.publisherStatus === "approved") {
+    const expired = !user.publisherSubscriptionExpiresAt || new Date(user.publisherSubscriptionExpiresAt) <= new Date();
+    if (expired) return <section className="content-card publisher-onboarding"><h2>Renew your publisher subscription</h2><p>Your subscription has expired. Renew it securely with Paystack to continue submitting books.</p><button type="button" className="primary" onClick={renewSubscription} disabled={saving}>{saving ? "Opening secure payment..." : "Renew subscription"}</button>{message && <p className="inline-toast error">{message}</p>}</section>;
     return (
       <>
         <PublisherBankSetup />

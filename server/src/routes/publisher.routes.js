@@ -5,10 +5,30 @@ const { createProduct } = require("../controllers/product.controller");
 const PublisherSubscriptionSettings = require("../models/PublisherSubscriptionSettings");
 const User = require("../models/User");
 const Order = require("../models/Order");
+const PublisherSubscriptionPayment = require("../models/PublisherSubscriptionPayment");
+const paystack = require("../services/paystack");
 const { createNotification, notifyAdminTeam } = require("../services/notification.service");
 const { sendPushToUser } = require("../services/push.service");
 
 const router = express.Router();
+
+const clientUrl = (process.env.CLIENT_URL || "http://localhost:5173").split(",")[0].trim().replace(/\/$/, "");
+
+async function beginSubscriptionPayment(user) {
+  const settings = await PublisherSubscriptionSettings.findOne({ key: "default" }).lean();
+  if (!settings?.enabled || Number(settings.annualFee) <= 0) throw new Error("Publisher subscriptions are not available at the moment.");
+
+  const payment = await paystack.post("/transaction/initialize", {
+    email: user.email,
+    amount: Math.round(Number(settings.annualFee) * 100),
+    currency: settings.currency || "NGN",
+    callback_url: `${clientUrl}/publish-with-us?subscription_payment=complete`,
+    metadata: { userId: String(user._id), paymentType: "publisher_subscription" },
+  });
+  const reference = payment.data.data.reference;
+  await PublisherSubscriptionPayment.create({ userId: user._id, reference, amount: Number(settings.annualFee), currency: settings.currency || "NGN" });
+  return payment.data.data.authorization_url;
+}
 
 router.post("/apply", protect, async (req, res) => {
   const { publisherName, publisherType, website, bio, note } = req.body;
@@ -34,11 +54,19 @@ router.post("/apply", protect, async (req, res) => {
       data: { userId: req.user._id },
     });
 
-    res.json({
-      message: "Publisher application submitted. An administrator will review your account and activate your subscription.",
-    });
+    const authorization_url = await beginSubscriptionPayment(req.user);
+    res.json({ authorization_url, message: "Continue to Paystack to activate your publisher subscription." });
   } catch (error) {
     res.status(400).json({ message: error.message || "Unable to submit publisher application." });
+  }
+});
+
+router.post("/subscription/renew", protect, async (req, res) => {
+  try {
+    const authorization_url = await beginSubscriptionPayment(req.user);
+    res.json({ authorization_url });
+  } catch (error) {
+    res.status(400).json({ message: error.message || "Unable to start subscription payment." });
   }
 });
 

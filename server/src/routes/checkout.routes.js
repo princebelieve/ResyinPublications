@@ -199,6 +199,7 @@ router.post("/", protect, async (req, res) => {
       cashCollectionStatus: paymentMethod === "cash_on_delivery" ? "pending_collection" : "not_applicable",
       manualTransferStatus: paymentMethod === "manual_bank_transfer" ? "pending_verification" : "not_applicable",
       paymentReference,
+      paymentReferences: paymentReference ? [paymentReference] : [],
       confirmationTokenHash,
       confirmationTokenExpires: new Date(Date.now() + 24 * 60 * 60 * 1000),
     });

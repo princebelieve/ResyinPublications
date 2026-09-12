@@ -9,6 +9,8 @@ const User = require("../models/User");
 const Cart = require("../models/Cart");
 const DistributorStockOrder = require("../models/DistributorStockOrder");
 const DistributorInventory = require("../models/DistributorInventory");
+const PublisherSubscriptionPayment = require("../models/PublisherSubscriptionPayment");
+const PublisherSubscriptionSettings = require("../models/PublisherSubscriptionSettings");
 const {
   createNotification,
   countUnreadNotifications,
@@ -49,6 +51,33 @@ router.post("/", async (req, res) => {
     if (event.event === "charge.success") {
       const reference = event.data.reference;
 
+      const subscriptionPayment = await PublisherSubscriptionPayment.findOne({ reference });
+      if (subscriptionPayment) {
+        if (subscriptionPayment.status === "paid") return res.json({ received: true });
+        if (event.data.status !== "success"
+          || String(event.data.currency || "").toUpperCase() !== String(subscriptionPayment.currency).toUpperCase()
+          || Number(event.data.amount) !== Math.round(Number(subscriptionPayment.amount) * 100)) {
+          return res.status(400).json({ message: "Subscription payment does not match." });
+        }
+
+        const [user, settings] = await Promise.all([
+          User.findById(subscriptionPayment.userId),
+          PublisherSubscriptionSettings.findOne({ key: "default" }).lean(),
+        ]);
+        if (!user || !settings?.enabled) return res.status(400).json({ message: "Publisher subscription is unavailable." });
+
+        const base = user.publisherSubscriptionExpiresAt && user.publisherSubscriptionExpiresAt > new Date()
+          ? user.publisherSubscriptionExpiresAt
+          : new Date();
+        user.publisherStatus = "approved";
+        user.publisherSubscriptionExpiresAt = new Date(base.getTime() + Number(settings.subscriptionDays || 365) * 24 * 60 * 60 * 1000);
+        subscriptionPayment.status = "paid";
+        subscriptionPayment.paidAt = new Date();
+        await Promise.all([user.save(), subscriptionPayment.save()]);
+        await createNotification({ userId: user._id, type: "publisher.subscription.activated", title: "Publisher subscription activated", body: `Your publisher subscription is active until ${user.publisherSubscriptionExpiresAt.toISOString().slice(0, 10)}. You can now submit books.`, link: "/publish-with-us" });
+        return res.json({ received: true });
+      }
+
       const distributorOrder = await DistributorStockOrder.findOne({ paymentReference: reference });
       if (distributorOrder) {
         if (distributorOrder.paymentStatus === "paid") return res.json({ received: true });
@@ -72,7 +101,7 @@ router.post("/", async (req, res) => {
       }
 
       const order = await Order.findOne({
-        paymentReference: reference,
+        $or: [{ paymentReference: reference }, { paymentReferences: reference }],
       });
 
       if (!order) {
@@ -86,6 +115,16 @@ router.post("/", async (req, res) => {
         return res.json({
           received: true,
         });
+      }
+
+      // A valid signature proves Paystack sent the event; these checks ensure
+      // that the event is also for this exact order rather than merely sharing
+      // a reference field.
+      if (event.data.status !== "success"
+        || String(event.data.currency || "").toUpperCase() !== String(order.currency || "NGN").toUpperCase()
+        || Number(event.data.amount) !== Math.round(Number(order.totalAmount || 0) * 100)) {
+        console.error("Paystack order mismatch", { reference, orderId: order._id, amount: event.data.amount, currency: event.data.currency });
+        return res.status(400).json({ message: "Payment does not match the order." });
       }
 
       order.paymentStatus = "paid";
