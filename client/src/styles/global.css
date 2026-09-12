@@ -1358,6 +1358,12 @@ input:focus {
   gap: 10px;
 }
 
+.card-price-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
 .card-price-label {
   color: #52675b;
   font-size: 0.68rem;
@@ -1368,6 +1374,13 @@ input:focus {
 
 .card-price {
   color: var(--navy);
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.card-sale-price {
+  color: #b94a25;
   font-size: 1.35rem;
   font-weight: 800;
   line-height: 1.2;

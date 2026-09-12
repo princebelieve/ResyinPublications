@@ -4,19 +4,32 @@ import { Link, useNavigate } from "react-router-dom";
 export default function ProductCard({ product }) {
   const navigate = useNavigate();
   const [imageFailed, setImageFailed] = useState(false);
+
   const pricedEditions = (product.editions || [])
     .filter((edition) => Number(edition.price) > 0)
-    .map((edition) => ({
-      basePrice: Number(edition.price),
-      salePrice: edition.salePrice != null && Number(edition.salePrice) < Number(edition.price)
-        ? Number(edition.salePrice)
-        : null,
-    }));
-  const lowestEdition = pricedEditions.sort((left, right) => (left.salePrice ?? left.basePrice) - (right.salePrice ?? right.basePrice))[0];
-  const basePrice = lowestEdition?.basePrice ?? Number(product.price || 0);
-  const salePrice = lowestEdition?.salePrice ?? (product.salePrice != null && Number(product.salePrice) < basePrice ? Number(product.salePrice) : null);
-  const isOnSale = salePrice != null;
-  const price = salePrice ?? basePrice;
+    .map((edition) => {
+      const regularPrice = Number(edition.price || 0);
+      const promoPrice = Number(edition.salePrice ?? 0);
+      const validPromoPrice = Number.isFinite(promoPrice) && promoPrice > 0 && promoPrice < regularPrice
+        ? promoPrice
+        : null;
+
+      return {
+        regularPrice,
+        promoPrice: validPromoPrice,
+        effectivePrice: validPromoPrice ?? regularPrice,
+      };
+    });
+
+  const lowestEdition = [...pricedEditions].sort((left, right) => left.effectivePrice - right.effectivePrice)[0];
+  const regularPrice = lowestEdition?.regularPrice ?? Number(product.price || 0);
+  const productPromoPrice = Number(product.salePrice ?? 0);
+  const validProductPromoPrice = Number.isFinite(productPromoPrice) && productPromoPrice > 0 && productPromoPrice < regularPrice
+    ? productPromoPrice
+    : null;
+  const promoPrice = lowestEdition?.promoPrice ?? validProductPromoPrice;
+  const hasPromoPrice = promoPrice != null && promoPrice > 0 && promoPrice < regularPrice;
+  const price = hasPromoPrice ? promoPrice : regularPrice;
   const inStock = Number(product.stock || 0) > 0;
 
   useEffect(() => setImageFailed(false), [product.coverImage]);
@@ -81,9 +94,11 @@ export default function ProductCard({ product }) {
             <span className="card-price">₦{Number(price || 0).toLocaleString()}</span>
           </div>
 
-          {isOnSale && <small className="card-original-price">Was ₦{Number(product.price).toLocaleString()}</small>}
-
-          {isOnSale && <small className="card-original-price">Regular price: {basePrice.toLocaleString()}</small>}
+          {hasPromoPrice && (
+            <small className="card-original-price">
+              Was ₦{Number(regularPrice || 0).toLocaleString()}
+            </small>
+          )}
 
           <div className={`card-stock ${inStock ? "in-stock" : "out-of-stock"}`}>
             {inStock ? "Available to order" : "Currently unavailable"}
