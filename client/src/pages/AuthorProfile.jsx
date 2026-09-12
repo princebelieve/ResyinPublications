@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { FaAmazon, FaFacebook, FaNewspaper } from "react-icons/fa";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import useScrollReveal from "../hooks/useScrollReveal";
@@ -8,6 +9,34 @@ const authorHighlights = [
   "Public policy and development administration",
   "Monitoring, evaluation and capacity building",
   "Evidence-based leadership and innovation",
+];
+
+const authorSocialLinks = [
+  {
+    label: "Resyin on Facebook",
+    href: "https://www.facebook.com/resyincoinc/",
+    icon: FaFacebook,
+  },
+  {
+    label: "Johnson Egonmwan on Amazon",
+    href: "https://www.amazon.com/Johnson-Egonmwan/e/B07WYVHVL1",
+    icon: FaAmazon,
+  },
+];
+
+const authorReferences = [
+  {
+    label: "The Nation review",
+    href: "https://thenationonlineng.net/a-phenomenal-treatise/",
+    icon: FaNewspaper,
+    text: "A review of Rich Nation, Poor People that identifies Prof. Egonmwan as its author and RESYIN Publications as publisher.",
+  },
+  {
+    label: "Amazon author profile",
+    href: "https://www.amazon.com/Johnson-Egonmwan/e/B07WYVHVL1",
+    icon: FaAmazon,
+    text: "His public author page lists his books and describes his public-administration and international consulting experience.",
+  },
 ];
 
 export default function AuthorProfile() {
@@ -26,7 +55,8 @@ export default function AuthorProfile() {
                 Distinguished scholar, development policy expert, public administrator,
                 author, and founder of RESYIN Publications. He has spent decades championing
                 informed writing, public accountability, and the power of ideas to shape societies.
-                He is also a respected speaker at national and international conferences.
+                His published work and professional experience connect public administration,
+                development, governance, and institutional reform.
               </p>
               <div className="author-cta-row">
                 <Link className="easy-btn easy-btn-primary" to="/collection?q=Egonmwan">
@@ -35,6 +65,23 @@ export default function AuthorProfile() {
                 <Link className="easy-btn easy-btn-light" to="/about">
                   About RESYIN
                 </Link>
+              </div>
+              <div className="author-social-links" aria-label="Author profiles and social links">
+                <span>Connect with Prof. Egonmwan</span>
+                <div>
+                  {authorSocialLinks.map(({ label, href, icon: Icon }) => (
+                    <a
+                      key={href}
+                      href={href}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={label}
+                      title={label}
+                    >
+                      <Icon size={20} aria-hidden="true" />
+                    </a>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -79,10 +126,11 @@ export default function AuthorProfile() {
               <p className="muted">
                 Prof. Egonmwan has served as State Director of Planning and Budget and as Permanent
                 Secretary/Director-General in the Ministry of Finance, Commerce and Industry, Edo State.
-                He has also worked as an international consultant for the World Bank, UNDP, UNICEF,
-                WHO, the European Union Delegation, and the UK Department for International Development,
-                supporting work in public financial management, governance reform, monitoring and
-                evaluation, and capacity building.
+                He has also worked as an independent specialist consultant for the World Bank, UNDP,
+                the European Union, and the UK Department for International Development, supporting
+                work in public financial management, governance reform, monitoring and evaluation,
+                and capacity building. Amazon describes him as the coordinating consultant and CEO
+                of Resyin Consults (Nigeria) Inc.
               </p>
             </div>
           </div>
@@ -99,6 +147,31 @@ export default function AuthorProfile() {
                 but about helping others make their voices heard, contribute meaningfully to public
                 life, and leave a lasting impact through informed writing and dialogue.
               </p>
+            </div>
+          </div>
+        </section>
+
+        <section className="section reveal">
+          <div className="container author-references-block">
+            <div className="values-header author-values-header">
+              <span className="eyebrow">PUBLIC REFERENCES</span>
+              <h2 className="title">Read the sources behind this profile</h2>
+              <p className="muted">
+                These public pages provide context about his books, publishing work, professional
+                background, and consulting experience.
+              </p>
+            </div>
+            <div className="author-reference-grid">
+              {authorReferences.map(({ label, href, icon: Icon, text }) => (
+                <a className="author-reference-card" href={href} key={href} target="_blank" rel="noreferrer">
+                  <span className="author-reference-icon" aria-hidden="true"><Icon size={21} /></span>
+                  <span>
+                    <strong>{label}</strong>
+                    <small>{text}</small>
+                    <em>Open reference</em>
+                  </span>
+                </a>
+              ))}
             </div>
           </div>
         </section>
