@@ -3,9 +3,9 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 const promotions = [
-  { label: "FEATURED AUTHOR", title: "Discover Prof. Johnson A. Egonmwan's collection.", text: "Explore one featured author collection alongside books from the wider RESYIN Publications catalog.", image: "/book-cover.png", to: "/collection", destination: "Featured author collection", action: "Explore the collection" },
-  { label: "BESTSELLERS", title: "Leadership, reform, and development titles.", text: "Discover the books that readers turn to for practical insight on institutions, reform, and growth.", image: "/book-cover.png", to: "/collection", destination: "Curated academic and professional titles", action: "Explore bestsellers" },
-  { label: "NEW RELEASES", title: "Fresh ideas for institutions and policy.", text: "Find current thinking on governance, management, and nation-building in a collection built for serious readers.", image: "/book-cover.png", to: "/collection", destination: "Research-backed titles and policy classics", action: "See new titles" },
+  { label: "FEATURED AUTHOR", title: "Discover Prof. Johnson A. Egonmwan's collection.", text: "Explore one featured author collection alongside books from the wider RESYIN Publications catalog.", image: "/let%27s%20learn%20about%20nigeria.png", to: "/collection", destination: "Featured author collection", action: "Explore the collection" },
+  { label: "BESTSELLERS", title: "Leadership, reform, and development titles.", text: "Discover the books that readers turn to for practical insight on institutions, reform, and growth.", image: "/let%27s%20learn%20about%20nigeria.png", to: "/collection", destination: "Curated academic and professional titles", action: "Explore bestsellers" },
+  { label: "NEW RELEASES", title: "Fresh ideas for institutions and policy.", text: "Find current thinking on governance, management, and nation-building in a collection built for serious readers.", image: "/let%27s%20learn%20about%20nigeria.png", to: "/collection", destination: "Research-backed titles and policy classics", action: "See new titles" },
 ];
 
 export default function ServicePromoCarousel() {

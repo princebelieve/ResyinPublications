@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const heroImages = ["/book-cover.png", "/book-cover.png", "/book-cover.png", "/book-cover.png"];
+const heroImages = ["/let%27s%20learn%20about%20nigeria.png", "/let%27s%20learn%20about%20nigeria.png", "/let%27s%20learn%20about%20nigeria.png", "/let%27s%20learn%20about%20nigeria.png"];
 const heroBodyText =
   "Discover books by Prof. Johnson A. Egonmwan and other authors. Explore scholarship, literature, and new perspectives.";
 

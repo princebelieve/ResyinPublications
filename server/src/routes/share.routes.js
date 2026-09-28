@@ -1,5 +1,4 @@
 const express = require("express");
-const Product = require("../models/Product");
 const Testimonial = require("../models/Testimonial");
 
 const router = express.Router();
@@ -42,15 +41,18 @@ function sharePage(res, { title, description, image, canonicalUrl, redirectUrl }
   res.type("html").send(`<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${safeTitle}</title><meta name="description" content="${safeDescription}"><link rel="canonical" href="${safeCanonical}"><meta property="og:type" content="website"><meta property="og:site_name" content="RESYIN Publications"><meta property="og:title" content="${safeTitle}"><meta property="og:description" content="${safeDescription}"><meta property="og:image" content="${safeImage}"><meta property="og:image:alt" content="${safeTitle}"><meta property="og:url" content="${safeCanonical}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${safeTitle}"><meta name="twitter:description" content="${safeDescription}"><meta name="twitter:image" content="${safeImage}"><meta http-equiv="refresh" content="0; url=${safeRedirect}"><script>window.location.replace(${JSON.stringify(redirectUrl)});</script></head><body><p>Opening <a href="${safeRedirect}">${safeTitle}</a>…</p></body></html>`);
 }
 
-router.get("/product/:id", async (req, res) => {
-  try {
-    const product = await Product.findOne({ _id: req.params.id, hidden: { $ne: true }, pendingApproval: { $ne: true }, pendingDeletion: { $ne: true }, status: { $ne: "inactive" }, approved: { $ne: false } }).lean();
-    if (!product) return res.status(404).send("Product not found.");
-    const productUrl = `${clientBaseUrl()}/product/${product._id}`;
-    sharePage(res, { title: `${product.name} | RESYIN Publications`, description: product.fullDescription || product.shortDescription || `Shop ${product.name} from RESYIN Publications.`, image: product.coverImage, canonicalUrl: productUrl, redirectUrl: productUrl });
-  } catch (error) {
-    res.status(500).send("Unable to prepare product preview.");
+// Keep previously shared Render URLs working without a database lookup or
+// JavaScript redirect. The storefront handles book availability and errors.
+router.get("/product/:id", (req, res) => {
+  const productUrl = new URL(
+    `/product/${encodeURIComponent(req.params.id)}`,
+    "https://resyinpublications.com",
+  );
+  const originalUrl = new URL(req.originalUrl, "https://resyinpublications.com");
+  for (const [key, value] of originalUrl.searchParams) {
+    if (key.startsWith("utm_")) productUrl.searchParams.append(key, value);
   }
+  res.redirect(301, productUrl.toString());
 });
 
 router.get("/content/:id", async (req, res) => {

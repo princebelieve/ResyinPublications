@@ -297,7 +297,7 @@ export default function Navbar() {
         </div>
       </div>
     </nav>
-    <div className="store-subnav"><Link to="/collection">All books</Link><Link to="/author/johnson-egonmwan">Dr. Johnson A. Egonmwan</Link><Link to="/collection?sort=newest">Latest additions</Link><Link to="/contact">Publish with us</Link><Link to="/support">Customer service</Link></div>
+    <div className="store-subnav"><Link to="/collection">All books</Link><Link to="/author/johnson-egonmwan">Prof. Johnson A. Egonmwan</Link><Link to="/collection?sort=newest">Latest additions</Link><Link to="/contact">Publish with us</Link><Link to="/support">Customer service</Link></div>
     </>
   );
 }

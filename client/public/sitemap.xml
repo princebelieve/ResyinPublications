@@ -9,6 +9,10 @@
     <priority>0.80</priority>
   </url>
   <url>
+    <loc>https://resyinpublications.com/author/johnson-egonmwan</loc>
+    <priority>0.90</priority>
+  </url>
+  <url>
     <loc>https://resyinpublications.com/support</loc>
     <priority>0.80</priority>
   </url>

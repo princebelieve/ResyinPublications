@@ -13,6 +13,7 @@ export default async function handler(req, res) {
     const staticPages = [
       { loc: baseUrl, priority: "1.00" },
       { loc: `${baseUrl}/collection`, priority: "0.95" },
+      { loc: `${baseUrl}/author/johnson-egonmwan`, priority: "0.90" },
       { loc: `${baseUrl}/support`, priority: "0.90" },
       { loc: `${baseUrl}/testimonials`, priority: "0.85" },
       { loc: `${baseUrl}/outreach`, priority: "0.80" },

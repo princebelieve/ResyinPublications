@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createTransportCompany, deleteTransportCompany, getAdminTransportCompanies, getNigerianDeliveryStates, importStarterTransportCompanies, updateTransportCompany } from "../services/api";
 
-const empty = { name: "", states: [], active: true };
+const empty = { name: "", states: [], active: false };
 
 export default function AdminTransportCompanies() {
   const [partners, setPartners] = useState([]);
@@ -57,8 +57,8 @@ export default function AdminTransportCompanies() {
     <div className="page">
       <h1>Delivery Partners</h1>
       <p className="muted">Add collection and delivery partners for customer orders. Assign each partner to the states they serve so customers can choose a collection point at checkout.</p>
-      <button type="button" className="secondary-button" onClick={importStarter}>Import partners for all active states</button>
-      <p className="muted">This imports common delivery partners and assigns them to every active delivery state. Review their coverage before customers place orders.</p>
+      <button type="button" className="secondary-button" onClick={importStarter}>Import partner drafts</button>
+      <p className="muted">New imports are hidden until you assign verified coverage and activate them. Review existing partners too: earlier imports may have assigned unverified states.</p>
       <form className="form" onSubmit={save}>
         <input required placeholder="Partner name or logistics company" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} />
         <fieldset className="payment-methods">
@@ -72,7 +72,7 @@ export default function AdminTransportCompanies() {
       {message && <p className="inline-toast success">{message}</p>}
       <section style={{ marginTop: 32 }}>
         <h2>Configured delivery partners</h2>
-        <div className="grid">{partners.map((partner) => <article className="card" key={partner._id}><h3>{partner.name}</h3><p>{partner.active ? "Active at checkout" : "Hidden from checkout"}</p><p className="muted">{partner.states.join(", ") || "All active delivery states"}</p><button onClick={() => { setEditing(partner._id); setForm({ name: partner.name, states: partner.states || [], active: partner.active }); }}>Edit</button><button className="btn-danger" onClick={async () => { await deleteTransportCompany(partner._id); load(); }}>Delete</button></article>)}</div>
+        <div className="grid">{partners.map((partner) => <article className="card" key={partner._id}><h3>{partner.name}</h3><p>{partner.active ? "Active at checkout" : "Hidden from checkout"}</p><p className="muted">{partner.states.join(", ") || "No states assigned"}</p><button onClick={() => { setEditing(partner._id); setForm({ name: partner.name, states: partner.states || [], active: partner.active }); }}>Edit</button><button className="btn-danger" onClick={async () => { try { await deleteTransportCompany(partner._id); load(); } catch (error) { setMessage(error.message); } }}>Deactivate</button></article>)}</div>
       </section>
     </div>
   );

@@ -6,7 +6,7 @@ const adverts = [
     label: "FEATURED COLLECTION",
     title: "Ideas worth returning to.",
     text: "Selected books for thoughtful reading.",
-    image: "/book-cover.png",
+    image: "/let%27s%20learn%20about%20nigeria.png",
   },
   {
     label: "AUTHOR SPOTLIGHT",

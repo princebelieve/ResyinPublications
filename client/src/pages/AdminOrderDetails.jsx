@@ -1,3 +1,5 @@
+import CollectionDetails from "../components/CollectionDetails";
+import { confirmOrderCollection } from "../services/api";
 //client/src/pages/AdminOrderDetails.jsx
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -8,6 +10,8 @@ import { formatDate } from "../utils/formatDate";
 export default function AdminOrderDetails() {
   const { id } = useParams();
   const [order, setOrder] = useState(null);
+  const [terminal, setTerminal] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     getOrderById(id, getToken()).then(setOrder);
@@ -19,7 +23,7 @@ export default function AdminOrderDetails() {
 
       setOrder(updated);
     } catch (err) {
-      console.error(err);
+      setError(err.message);
     }
   }
 
@@ -42,6 +46,9 @@ export default function AdminOrderDetails() {
     <div className="page order-detail-grid">
       <div className="order-main">
         <h2>Order {order.orderNumber}</h2>
+        {error && <p role="alert">{error}</p>}
+        <div className="order-card"><h3>Collection details</h3><CollectionDetails order={order} />
+        {order.deliveryMethod === "delivery" && <form onSubmit={async (event) => { event.preventDefault(); setError(""); try { setOrder(await confirmOrderCollection(order._id, terminal)); setTerminal(""); } catch (err) { setError(err.message); } }}><label>Confirmed terminal name and full address<textarea required maxLength={500} value={terminal} onChange={(event) => setTerminal(event.target.value)} /></label><button type="submit">Confirm collection point</button></form>}</div>
 
         <div className="order-card">
           <h3>Customer Info</h3>

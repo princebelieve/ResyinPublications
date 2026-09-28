@@ -1,3 +1,4 @@
+import CollectionDetails from "../components/CollectionDetails";
 //client/src/pages/Dashboard.jsx
 import { useEffect, useState } from "react";
 import { completePendingPayment, confirmPublisherOrderPayment, getMyOrders, getPendingPublisherOrders, getProfile } from "../services/api";
@@ -263,6 +264,7 @@ export default function Dashboard() {
                   </div>
                 </div>
 
+                <CollectionDetails order={order} />
                 {order.items && order.items.length > 0 && (
                   <div
                     style={{

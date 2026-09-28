@@ -206,6 +206,10 @@ const orderSchema = new mongoose.Schema(
 
     pickupLocation: { type: String, default: "" },
     transportCompanyPickupPoint: { type: String, default: "" },
+    transportCompanyId: { type: mongoose.Schema.Types.ObjectId, ref: "TransportCompany", default: null },
+    collectionState: { type: String, default: "" },
+    collectionStatus: { type: String, enum: ["not_applicable", "pending_confirmation", "confirmed"], default: "not_applicable" },
+    confirmedCollectionPoint: { type: String, default: "" },
     paymentInstructions: { type: String, default: "" },
 
     deliveryEstimate: {

@@ -72,7 +72,7 @@ function CanonicalUpdater() {
   const location = useLocation();
 
   useEffect(() => {
-    const canonicalUrl = `https://resyinpublications.com${location.pathname}${location.search}`;
+    const canonicalUrl = `https://resyinpublications.com${location.pathname}`;
     let canonical = document.querySelector('link[rel="canonical"]');
 
     if (!canonical) {

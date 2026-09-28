@@ -10,6 +10,7 @@ import { useSearchParams } from "react-router-dom";
 
 
 import { getProducts } from "../services/api";
+import PRODUCT_CATEGORY_OPTIONS from "../config/productCategoryOptions";
 
 export default function Collection() {
 
@@ -23,7 +24,7 @@ export default function Collection() {
   const author = params.get("author") || "";
   const sortOrder = params.get("sort") || "newest";
   function updateFilter(key, value) { setParams((current) => { const next = new URLSearchParams(current); if (value) next.set(key, value); else next.delete(key); return next; }); }
-  const categories = [...new Set(products.map((p) => p.category).filter(Boolean))].sort();
+  const categories = [...new Set([...PRODUCT_CATEGORY_OPTIONS, ...products.map((p) => p.category).filter(Boolean), ...(category ? [category] : [])])].sort((a, b) => a.localeCompare(b));
   const authors = [...new Set(products.map((p) => p.author || p.brand).filter(Boolean))].sort();
 
 

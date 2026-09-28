@@ -134,8 +134,12 @@ export function setProductSchema(product, url) {
 }
 
 export function getShareUrl(productId, productName) {
-  const apiBaseUrl = (import.meta.env.VITE_API_URL || window.location.origin).replace(/\/$/, "");
-  return `${apiBaseUrl}/api/share/product/${encodeURIComponent(productId)}?utm_source=share&utm_medium=social&utm_campaign=${encodeURIComponent(productName)}`;
+  // Shared links are storefront pages. The API host is only for data requests.
+  const url = new URL(`/product/${encodeURIComponent(productId)}`, window.location.origin);
+  url.searchParams.set("utm_source", "share");
+  url.searchParams.set("utm_medium", "social");
+  url.searchParams.set("utm_campaign", productName || "book");
+  return url.toString();
 }
 
 export function getContentShareUrl(contentId) {

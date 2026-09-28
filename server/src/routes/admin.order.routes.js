@@ -56,12 +56,30 @@ router.get("/:id", protect, adminOnly, async (req, res) => {
 });
 
 // UPDATE DELIVERY STATUS
+router.put("/:id/collection", protect, adminOnly, async (req, res) => {
+  try {
+    const point = String(req.body.confirmedCollectionPoint || "").trim();
+    if (!point || point.length > 500) return res.status(400).json({ message: "Enter the confirmed terminal name and address (up to 500 characters)." });
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ message: "Order not found." });
+    if (order.deliveryMethod !== "delivery") return res.status(400).json({ message: "This order does not use partner collection." });
+    order.confirmedCollectionPoint = point;
+    order.collectionStatus = "confirmed";
+    await order.save();
+    res.json(order);
+  } catch { res.status(400).json({ message: "Unable to confirm collection point." }); }
+});
+
 router.put("/:id/status", protect, adminOnly, async (req, res) => {
   const { deliveryStatus } = req.body;
 
   const order = await Order.findById(req.params.id);
 
   if (!order) return res.status(404).json({ message: "Order not found" });
+
+  if (order.deliveryMethod === "delivery" && ["ready_for_dispatch", "shipped", "out_for_delivery", "delivered"].includes(deliveryStatus) && !order.confirmedCollectionPoint) {
+    return res.status(400).json({ message: "Confirm the collection terminal and address before dispatch." });
+  }
 
   const fulfilmentStatuses = ["confirmed", "processing", "ready_for_dispatch", "shipped", "out_for_delivery", "delivered"];
   if (fulfilmentStatuses.includes(deliveryStatus) && order.paymentStatus !== "paid") {

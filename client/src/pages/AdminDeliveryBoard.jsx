@@ -1,3 +1,5 @@
+import CollectionDetails from "../components/CollectionDetails";
+import { Link } from "react-router-dom";
 //client/src/pages/AdminDeliveryBoard.jsx
 import { useEffect, useState } from "react";
 import { getAdminOrders } from "../services/api";
@@ -28,7 +30,7 @@ export default function AdminDeliveryBoard() {
                 <div key={o._id} className="kanban-card">
                   <strong>{o.orderNumber}</strong>
 
-                  <p>{o.customerName}</p>
+                  <p>{o.customerName}</p><CollectionDetails order={o} /><Link to={`/admin/orders/${o._id}`}>Review collection details</Link>
 
                   <p>₦{Number(o.totalAmount).toLocaleString()}</p>
                   <p>Placed: {formatDate(o.createdAt)}</p>

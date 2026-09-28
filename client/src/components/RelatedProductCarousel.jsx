@@ -9,7 +9,7 @@ export default function RelatedProductCarousel({ products = [] }) {
     category: "GROW THE CATALOG",
     name: "Share Your Voice",
     shortDescription: "Bring your book to the RESYIN Publications catalog and connect with readers worldwide. Publishers, authors, and independent creators welcome.",
-    coverImage: "/book-cover.png",
+    coverImage: "/let%27s%20learn%20about%20nigeria.png",
   };
 
   // Intersperse promo after every 8 books

@@ -35,6 +35,7 @@ export default function Checkout() {
     deliveryMethod: "delivery",
     pickupTransportCompany: "",
     pickupOtherLocation: "",
+    collectionRequestAcknowledged: false,
   });
 
   useEffect(() => {
@@ -53,11 +54,12 @@ export default function Checkout() {
   }, [hasPublisherBooks, canPayPublisherDirectly, isDigitalOnlyCart]);
 
   function handleChange(e) {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
 
     setForm((current) => ({
       ...current,
-      [name]: value,
+      [name]: type === "checkbox" ? checked : value,
+      ...(["state", "country"].includes(name) ? { pickupTransportCompany: "", pickupOtherLocation: "", collectionRequestAcknowledged: false } : {}),
       ...(name === "country" && value !== "NG" ? { paymentMethod: "paystack" } : {}),
     }));
 
@@ -78,9 +80,12 @@ export default function Checkout() {
   }, []);
 
   useEffect(() => {
-    if (!form.state) { setTransportCompanies([]); return; }
-    getTransportCompanies(form.state).then(setTransportCompanies).catch(() => setTransportCompanies([]));
-  }, [form.state]);
+    let current = true;
+    setTransportCompanies([]);
+    if (!form.state || form.country !== "NG") return;
+    getTransportCompanies(form.state).then((items) => { if (current) setTransportCompanies(items); }).catch(() => { if (current) setTransportCompanies([]); });
+    return () => { current = false; };
+  }, [form.state, form.country]);
 
   useEffect(() => {
     getNigerianDeliveryStates()
@@ -93,6 +98,7 @@ export default function Checkout() {
   }, []);
 
   useEffect(() => {
+    let current = true;
     async function loadShipping() {
       try {
         if (isDigitalOnlyCart) {
@@ -121,9 +127,11 @@ export default function Checkout() {
         });
 
         setShippingError("");
+        if (!current) return;
         setShippingFee(Number(data.shippingFee || 0));
         setShippingInfo(data);
       } catch (err) {
+        if (!current) return;
         console.error(err);
         setShippingError(
           err.message || "Unable to verify delivery availability.",
@@ -134,6 +142,7 @@ export default function Checkout() {
     }
 
     loadShipping();
+    return () => { current = false; };
   }, [form.country, form.state, form.deliveryMethod, cart, isDigitalOnlyCart]);
 
   async function handleCheckout(e) {
@@ -144,6 +153,7 @@ export default function Checkout() {
     try {
       const response = await initializeCheckout({
         ...form,
+        transportCompanyId: transportCompanies.find((company) => company.name === form.pickupTransportCompany)?._id,
       });
 
       if (["cash_on_delivery", "manual_bank_transfer", "publisher_direct_transfer"].includes(response.checkoutType)) {
@@ -228,6 +238,7 @@ export default function Checkout() {
                     <input name="state" placeholder="State / Region" value={form.state} onChange={handleChange} />
                   )}
                   <label className="checkout-address-label">Delivery partner or collection park <span>Your parcel will be sent to the closest available terminal in your state; we will confirm the exact terminal before dispatch.</span><select name="pickupTransportCompany" value={form.pickupTransportCompany} onChange={handleChange} required><option value="">{form.state ? "Select a delivery partner or park" : "Select your state first"}</option>{transportCompanies.map((company) => <option key={company._id} value={company.name}>{company.name}</option>)}<option value="Other / specify a delivery partner or park">Other / specify a delivery partner or park</option></select></label><label className="checkout-address-label">Other delivery partner or park <span>Complete this only when you select “Other / specify” above.</span><input name="pickupOtherLocation" placeholder="Enter the delivery partner or park" value={form.pickupOtherLocation} onChange={handleChange} required={form.pickupTransportCompany === "Other / specify a delivery partner or park"} /></label>
+                  {form.pickupTransportCompany === "Other / specify a delivery partner or park" && <label><input type="checkbox" name="collectionRequestAcknowledged" checked={form.collectionRequestAcknowledged} onChange={handleChange} required /> I understand this is a requested collection point. RESYIN must confirm availability and the exact terminal before dispatch; payment does not confirm this location.</label>}
                 </>
               ) : (
                 <div className="checkout-pickup-note">

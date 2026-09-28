@@ -1,6 +1,7 @@
 // server/src/controllers/product.controller.js
 const Product = require("../models/Product");
 const User = require("../models/User");
+const productCategoryMap = require("../config/productCategoryMap");
 const { uploadToR2, uploadPrivateBookFile, deleteFromR2, deletePrivateBookFile } = require("../config/r2");
 const {
   createNotification,
@@ -147,7 +148,7 @@ async function getProduct(req, res) {
 async function getProductCategories(req, res) {
   try {
     const products = await Product.find({}, "category").lean();
-    const categories = [...new Set(products.map((p) => p.category?.trim()).filter(Boolean))]
+    const categories = [...new Set([...Object.keys(productCategoryMap), ...products.map((p) => p.category?.trim()).filter(Boolean)])]
       .sort((a, b) => a.localeCompare(b))
       .map((label) => ({ label, value: label }));
     res.json(categories);

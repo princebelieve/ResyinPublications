@@ -39,8 +39,8 @@ button,input,select,textarea { font-family:inherit; }
 .store-hero-link { display:inline-block; margin:15px 0 0 20px; font-size:14px; text-decoration:underline; }
 .store-hero-art { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px; background:#e1e7df; isolation:isolate; }
 .store-orbit { position:absolute; width:290px; height:290px; background:#f1ebd9; border-radius:50%; z-index:-1; }
-.store-hero-art img { width:185px; height:265px; object-fit:contain; transform:rotate(-7deg); filter:drop-shadow(14px 16px 9px #25302035); transition:transform .25s; }
-.store-hero-art:hover img { transform:rotate(-3deg) translateY(-3px); }
+.store-hero-art img { width:185px; height:265px; object-fit:contain; transform:translateY(0); filter:drop-shadow(14px 16px 9px #25302035); transition:transform .25s; }
+.store-hero-art:hover img { transform:translateY(-3px); }
 .store-art-caption { margin-top:22px; color:#52645f; font-family:Georgia,serif; font-style:italic; font-size:16px; }
 .store-benefits { display:flex; justify-content:space-around; gap:20px; background:white; border-bottom:1px solid #dfe2e5; padding:19px; }
 .store-benefits span { display:flex; align-items:center; gap:10px; font-size:13px; color:#4d5c66; }

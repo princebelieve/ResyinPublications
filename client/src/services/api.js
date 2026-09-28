@@ -942,3 +942,7 @@ export async function deleteTransportCompany(id) { return apiRequest(`/api/trans
 export async function importStarterTransportCompanies() { return apiRequest("/api/transport-companies/admin/import-starter", { method: "POST" }); }
 
 export { apiRequest };
+
+export async function confirmOrderCollection(id, confirmedCollectionPoint) {
+  return apiRequest(`/api/admin/orders/${id}/collection`, { method: "PUT", body: JSON.stringify({ confirmedCollectionPoint }) });
+}

@@ -6,6 +6,8 @@ const router = express.Router();
 const Cart = require("../models/Cart");
 const Order = require("../models/Order");
 const Product = require("../models/Product");
+const TransportCompany = require("../models/TransportCompany");
+const { resolveCollection } = require("../services/collection");
 const User = require("../models/User");
 const StorePaymentSettings = require("../models/StorePaymentSettings");
 const paystack = require("../services/paystack");
@@ -27,7 +29,7 @@ router.post("/", protect, async (req, res) => {
     const userId = req.user.id;
 
     const {
-      customerName, email, phone, address, city, state, country, notes, pickupTransportCompany, pickupOtherLocation,
+      customerName, email, phone, address, city, state, country, notes,
       paymentMethod = "paystack", deliveryMethod = "delivery",
     } = req.body;
 
@@ -35,12 +37,6 @@ router.post("/", protect, async (req, res) => {
 
     if (!["paystack", "cash_on_delivery", "manual_bank_transfer", "publisher_direct_transfer"].includes(paymentMethod)) {
       return res.status(400).json({ message: "Choose a valid payment method." });
-    }
-    const selectedPickupLocation = String(pickupTransportCompany || "").trim() === "Other / specify a delivery partner or park"
-      ? String(pickupOtherLocation || "").trim()
-      : String(pickupTransportCompany || "").trim();
-    if (deliveryMethod === "delivery" && !selectedPickupLocation) {
-      return res.status(400).json({ message: "Select the transport company or motor park you prefer." });
     }
 
     let storePaymentSettings = null;
@@ -128,6 +124,8 @@ router.post("/", protect, async (req, res) => {
       return isDigitalFormat(item.editionKey || edition.format);
     });
 
+    const collection = await resolveCollection({ ...req.body, deliveryMethod }, digitalOnlyOrder, (filter) => TransportCompany.findOne(filter).lean());
+
     const shippingData = digitalOnlyOrder
       ? { shippingAvailable: true, shippingFee: 0, serviceName: "Digital download", estimatedDays: "Instant access after payment" }
       : deliveryMethod === "pickup"
@@ -161,7 +159,7 @@ router.post("/", protect, async (req, res) => {
         amount: totalAmount * 100,
         currency: "NGN",
         callback_url: `${clientUrl}/success?order_token=${confirmationToken}`,
-        metadata: { userId, customerName, phone, state, country, notes, transportCompanyPickupPoint: selectedPickupLocation },
+        metadata: { userId, customerName, phone, state, country, notes, transportCompanyPickupPoint: collection.transportCompanyPickupPoint },
       });
       paymentReference = payment.data.data.reference;
       authorizationUrl = payment.data.data.authorization_url;
@@ -184,9 +182,7 @@ router.post("/", protect, async (req, res) => {
       deliveryStatus: "pending",
       deliveryFee: shippingFee,
       deliveryZone: country,
-      deliveryMethod,
-      pickupLocation: deliveryMethod === "pickup" ? "RESYIN Publications, Benin City" : "",
-      transportCompanyPickupPoint: deliveryMethod === "delivery" ? selectedPickupLocation : "",
+      ...collection,
       paymentInstructions: "",
       deliveryEstimate: shippingData.estimatedDays || "",
       shippingService: shippingData.serviceName || "",
@@ -270,8 +266,8 @@ router.post("/", protect, async (req, res) => {
     });
   } catch (err) {
     console.error(err.response?.data || err.message);
-    res.status(500).json({
-      message: "Checkout failed",
+    res.status(err.statusCode || 500).json({
+      message: err.statusCode === 400 ? err.message : "Checkout failed",
     });
   }
 });

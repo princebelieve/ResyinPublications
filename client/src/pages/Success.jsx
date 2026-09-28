@@ -1,3 +1,4 @@
+import CollectionDetails from "../components/CollectionDetails";
 //client/src/pages/Success.jsx
 import { useEffect, useState } from "react";
 import { useSearchParams, Link, useNavigate } from "react-router-dom";
@@ -46,7 +47,7 @@ export default function Success() {
     const shippingAmount = isPickup ? 0 : Number(order.shippingFee || 0);
     const totalAmount = Number(order.totalAmount || 0);
     const paymentStatus = isPaid ? "Paid" : isCashOnDelivery ? "Pay on delivery / pickup" : "Payment processing";
-    const message = `Hello RESYIN Publications, here is my order receipt:\n\nOrder: ${order.orderNumber || order._id}\nPayment: ${paymentStatus}\nCollection: ${fulfilment}\n\n${items}\n\nSubtotal: ₦${Number(order.subtotal || 0).toLocaleString()}\nShipping: ₦${shippingAmount.toLocaleString()}\nTotal: ₦${totalAmount.toLocaleString()}\n\nCustomer: ${order.customerName}\nPhone: ${order.phone}\n${order.paymentReference ? `Payment reference: ${order.paymentReference}` : ""}`;
+    const message = `Hello RESYIN Publications, here is my order receipt:\n\nOrder: ${order.orderNumber || order._id}\nCollection partner: ${order.transportCompanyPickupPoint || order.pickupLocation || order.shippingService || "Not specified"}\nTerminal: ${order.confirmedCollectionPoint || (order.deliveryMethod === "delivery" ? "Awaiting confirmation" : "Not applicable")}\nPayment: ${paymentStatus}\nCollection: ${fulfilment}\n\n${items}\n\nSubtotal: ₦${Number(order.subtotal || 0).toLocaleString()}\nShipping: ₦${shippingAmount.toLocaleString()}\nTotal: ₦${totalAmount.toLocaleString()}\n\nCustomer: ${order.customerName}\nPhone: ${order.phone}\n${order.paymentReference ? `Payment reference: ${order.paymentReference}` : ""}`;
     window.open(`https://wa.me/2349041441646?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
   }
 
@@ -345,6 +346,7 @@ export default function Success() {
             </div>
           )}
 
+          <CollectionDetails order={order} />
           {/* Delivery Address */}
           <div
             style={{
