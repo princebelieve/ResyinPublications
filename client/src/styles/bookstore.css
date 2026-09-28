@@ -952,3 +952,7 @@ button,input,select,textarea { font-family:inherit; }
 }
 .bookstore-navbar .store-account .nav-links > a,.bookstore-navbar .store-account .nav-links > button { display:block; padding:9px 12px; font-size:13px; color:#18212b; text-align:left; background:white; border:0; }
 .bookstore-navbar .store-account .nav-links > a:hover,.bookstore-navbar .store-account .nav-links > button:hover { background:#f1f3f4; }
+.required-field-info { display:inline; font-size:13px; font-weight:400; }
+.book-upload-form .required-field-info-button { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; min-height:0; padding:0; margin:0 4px; border:1px solid #64748b; border-radius:50%; background:white; color:#334155; font:600 12px Georgia,serif; cursor:pointer; vertical-align:middle; }
+.book-upload-form .required-field-info-button:focus-visible { outline:2px solid #2563eb; outline-offset:3px; }
+.required-field-info-text:not([hidden]) { display:block; margin:6px 0; padding:8px 10px; border-radius:6px; background:#f1f5f9; color:#334155; line-height:1.5; }

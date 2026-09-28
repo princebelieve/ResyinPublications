@@ -8,7 +8,7 @@ test("book shares open the storefront details page and safely encode book data",
   try {
     const url = new URL(getShareUrl("book/id?", "Nigeria & Society #1"));
     assert.equal(url.origin, "https://resyinpublications.com");
-    assert.equal(url.pathname, "/product/book%2Fid%3F");
+    assert.equal(url.pathname, "/share/product");
     assert.equal(url.searchParams.get("utm_campaign"), "Nigeria & Society #1");
     assert.equal(url.searchParams.get("utm_source"), "share");
     assert.equal(url.searchParams.get("utm_medium"), "social");
@@ -16,7 +16,7 @@ test("book shares open the storefront details page and safely encode book data",
     globalThis.window.location.origin = "http://localhost:5173";
     const localUrl = new URL(getShareUrl("123"));
     assert.equal(localUrl.origin, "http://localhost:5173");
-    assert.equal(localUrl.pathname, "/product/123");
+    assert.equal(localUrl.pathname, "/share/product");
     assert.equal(localUrl.searchParams.get("utm_campaign"), "book");
   } finally {
     if (previousWindow === undefined) delete globalThis.window;

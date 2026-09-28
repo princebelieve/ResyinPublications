@@ -19,7 +19,7 @@ test("old Render book links redirect to the storefront without database access",
       assert.equal(response.status, 301);
       const destination = new URL(response.headers.get("location"));
       assert.equal(destination.origin, "https://resyinpublications.com");
-      assert.equal(destination.pathname, "/product/507f1f77bcf86cd799439011");
+      assert.equal(destination.pathname, "/share/product");
       assert.equal(destination.searchParams.get("utm_source"), "share");
       assert.equal(destination.searchParams.get("utm_campaign"), "Nigeria & Society");
       assert.equal(destination.searchParams.has("redirect"), false);

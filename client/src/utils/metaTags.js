@@ -134,8 +134,9 @@ export function setProductSchema(product, url) {
 }
 
 export function getShareUrl(productId, productName) {
-  // Shared links are storefront pages. The API host is only for data requests.
-  const url = new URL(`/product/${encodeURIComponent(productId)}`, window.location.origin);
+  // Serve book metadata in the initial HTML for messaging-app previews.
+  const url = new URL("/share/product", window.location.origin);
+  url.searchParams.set("id", productId);
   url.searchParams.set("utm_source", "share");
   url.searchParams.set("utm_medium", "social");
   url.searchParams.set("utm_campaign", productName || "book");

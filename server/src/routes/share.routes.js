@@ -45,7 +45,7 @@ function sharePage(res, { title, description, image, canonicalUrl, redirectUrl }
 // JavaScript redirect. The storefront handles book availability and errors.
 router.get("/product/:id", (req, res) => {
   const productUrl = new URL(
-    `/product/${encodeURIComponent(req.params.id)}`,
+    `/share/product?id=${encodeURIComponent(req.params.id)}`,
     "https://resyinpublications.com",
   );
   const originalUrl = new URL(req.originalUrl, "https://resyinpublications.com");
