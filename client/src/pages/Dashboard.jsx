@@ -1,7 +1,7 @@
 import CollectionDetails from "../components/CollectionDetails";
 //client/src/pages/Dashboard.jsx
 import { useEffect, useState } from "react";
-import { completePendingPayment, confirmPublisherOrderPayment, getMyOrders, getPendingPublisherOrders, getProfile } from "../services/api";
+import { apiRequest, getDigitalBookDownloadUrl, completePendingPayment, confirmPublisherOrderPayment, getMyOrders, getPendingPublisherOrders, getProfile } from "../services/api";
 import { formatDate } from "../utils/formatDate";
 import useAuth from "../context/AuthContext";
 import UserLayout from "../components/user/UserLayout";
@@ -32,6 +32,22 @@ export default function Dashboard() {
     load();
   }, [token]);
 
+  useEffect(() => {
+    const pending = orders.filter((order) => order.paymentMethod === "paystack" && order.paymentStatus === "pending");
+    if (!pending.length) return;
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      for (const order of pending) {
+        if (cancelled) return;
+        try {
+          const result = await apiRequest(`/api/orders/${order._id}/verify-payment`, { method: "POST" });
+          if (!cancelled) setOrders((current) => current.map((item) => item._id === order._id ? result.order : item));
+        } catch { /* The manual check remains available when verification is unavailable. */ }
+      }
+    }, 10000);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [orders]);
+
   const activeOrdersCount = orders.filter(
     (o) => o.deliveryStatus !== "delivered" && o.deliveryStatus !== "cancelled",
   ).length;
@@ -43,9 +59,36 @@ export default function Dashboard() {
   async function completePayment(orderId) {
     try {
       const response = await completePendingPayment(orderId);
-      window.location.assign(response.authorization_url);
+      if (response.paid) {
+        setOrders((current) => current.map((order) => order._id === orderId ? response.order : order));
+        setNotice("Payment confirmed. Your downloads are ready below.");
+      } else {
+        window.location.assign(response.authorization_url);
+      }
     } catch (error) {
       setNotice(error.message || "Unable to restart payment. Please try again.");
+    }
+  }
+
+  async function checkPayment(orderId) {
+    try {
+      setNotice("Checking your payment...");
+      const result = await apiRequest(`/api/orders/${orderId}/verify-payment`, { method: "POST" });
+      setOrders((current) => current.map((order) => order._id === orderId ? result.order : order));
+      setNotice(result.order.paymentStatus === "paid"
+        ? "Payment confirmed. Your downloads are ready below."
+        : "Payment is not confirmed yet. Your order is saved here. If you were debited, do not pay again; check again shortly or contact RESYIN with your payment reference.");
+    } catch (error) {
+      setNotice(error.message);
+    }
+  }
+
+  async function downloadBook(item) {
+    try {
+      const result = await getDigitalBookDownloadUrl(item.productId, String(item.format || item.editionKey).toLowerCase());
+      window.location.assign(result.downloadUrl);
+    } catch (error) {
+      setNotice(error.message || "Unable to prepare your download.");
     }
   }
 
@@ -119,6 +162,7 @@ export default function Dashboard() {
         </div>
         {notice && <p className="inline-toast success">{notice}</p>}
         {publisherOrders.length > 0 && <section className="content-card publisher-orders"><h2>Publisher payment confirmations</h2><p className="muted">Confirm each direct payment after checking your bank account. Digital downloads and fulfilment remain locked until confirmation.</p>{publisherOrders.map((order) => <article key={order._id}><strong>Order #{order._id.slice(-6).toUpperCase()}</strong><span>{order.items.filter((item) => item.publisherId === String(user?._id)).map((item) => `${item.quantity} × ${item.name}`).join(", ")}</span><span>{order.paymentInstructions}</span><button type="button" className="primary" onClick={() => confirmPublisherPayment(order._id)}>Confirm customer payment</button></article>)}</section>}
+
 
         {/* Account Information */}
         <div className="profile-info-grid">
@@ -278,14 +322,19 @@ export default function Dashboard() {
                     {order.items.map((item, idx) => (
                       <div key={idx} style={{ marginTop: "4px" }}>
                         {item.quantity} × {item.name}
+                        {["pdf", "epub"].includes(String(item.format || item.editionKey).toLowerCase()) && (order.paymentStatus === "paid" || item.publisherPaymentStatus === "confirmed") && (
+                          <button type="button" onClick={() => downloadBook(item)}>Download {String(item.format || item.editionKey).toUpperCase()}</button>
+                        )}
                       </div>
                     ))}
                   </div>
                 )}
                 {order.paymentMethod === "paystack" && order.paymentStatus === "pending" && (
                   <div className="pending-payment-action">
-                    <strong>Payment incomplete</strong>
-                    <span>Complete payment before RESYIN can prepare or dispatch this order.</span>
+                    <strong>Payment awaiting confirmation</strong>
+                    <span>Your order is saved. If you have already been debited, check payment status before trying another payment.</span>
+                    <span>Payment reference: <code>{order.paymentReference}</code></span>
+                    <button type="button" onClick={() => checkPayment(order._id)}>Check payment status</button>
                     <button type="button" className="primary" onClick={() => completePayment(order._id)}>Complete payment</button>
                   </div>
                 )}

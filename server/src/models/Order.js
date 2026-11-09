@@ -156,6 +156,8 @@ const orderSchema = new mongoose.Schema(
     confirmationTokenHash: { type: String, select: false },
     confirmationTokenExpires: { type: Date, select: false },
 
+    paymentProcessingUntil: { type: Date, select: false },
+
     paymentStatus: {
       type: String,
       enum: ["pending", "paid", "failed", "refunded", "partially_refunded"],

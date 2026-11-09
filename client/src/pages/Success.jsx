@@ -35,7 +35,7 @@ export default function Success() {
     ? "Please complete the bank transfer using the account details below. RESYIN will verify your payment before processing the order."
     : isPaid
     ? "Your order has been confirmed and is being prepared."
-    : "We're processing your payment. Check back soon for updates.";
+    : "We are checking your payment automatically. Your order is saved in My Orders, even if you leave this page. If you were debited, do not pay again.";
 
   function sendOrderReceiptToWhatsApp() {
     if (!order) return;
@@ -58,21 +58,28 @@ export default function Success() {
       return;
     }
 
+    let cancelled = false;
+    let timer;
     const fetchOrder = async () => {
       try {
-        setLoading(true);
         const data = await apiRequest(`/api/orders/confirmation/${orderToken}`);
+        if (cancelled) return;
         setOrder(data);
         setError(null);
+        if (data.paymentMethod === "paystack" && data.paymentStatus === "pending") {
+          timer = setTimeout(fetchOrder, 5000);
+        }
       } catch (err) {
-        console.error("Error fetching order:", err);
+        if (cancelled) return;
         setError(err.message || "Failed to fetch order details. Please try again.");
+        timer = setTimeout(fetchOrder, 10000);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     fetchOrder();
+    return () => { cancelled = true; clearTimeout(timer); };
   }, [orderToken]);
 
   if (loading) {
@@ -121,7 +128,7 @@ export default function Success() {
                 color: "#999",
               }}
             >
-              Order confirmations are available once only. Please use your dashboard to view your order.
+              Your order is saved in My Orders. You can leave this page and return there to check payment and download your books.
             </p>
             <div
               style={{

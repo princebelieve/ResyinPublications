@@ -21,6 +21,8 @@ const {
   sendPushToAdmins,
 } = require("../services/push.service");
 
+const { confirmOrderPayment } = require("../services/orderPayment");
+
 const router = express.Router();
 
 router.post("/", async (req, res) => {
@@ -100,128 +102,7 @@ router.post("/", async (req, res) => {
         return res.json({ received: true });
       }
 
-      const order = await Order.findOne({
-        $or: [{ paymentReference: reference }, { paymentReferences: reference }],
-      });
-
-      if (!order) {
-        return res.json({
-          received: true,
-        });
-      }
-
-      // prevent double stock deduction
-      if (order.paymentStatus === "paid") {
-        return res.json({
-          received: true,
-        });
-      }
-
-      // A valid signature proves Paystack sent the event; these checks ensure
-      // that the event is also for this exact order rather than merely sharing
-      // a reference field.
-      if (event.data.status !== "success"
-        || String(event.data.currency || "").toUpperCase() !== String(order.currency || "NGN").toUpperCase()
-        || Number(event.data.amount) !== Math.round(Number(order.totalAmount || 0) * 100)) {
-        console.error("Paystack order mismatch", { reference, orderId: order._id, amount: event.data.amount, currency: event.data.currency });
-        return res.status(400).json({ message: "Payment does not match the order." });
-      }
-
-      order.paymentStatus = "paid";
-
-      order.deliveryStatus = "confirmed";
-
-      order.paidAt = new Date();
-
-      order.statusHistory.push({
-        status: "confirmed",
-      });
-
-      // Deduct from distributor stock when this customer entered through a distributor shop.
-      const LOW_STOCK_THRESHOLD = 5;
-      for (const item of order.items) {
-        if (order.distributorId) {
-          const inventory = await DistributorInventory.findOneAndUpdate({ distributorId: order.distributorId, productId: item.productId, quantity: { $gte: item.quantity } }, { $inc: { quantity: -item.quantity, unitsSold: item.quantity } }, { new: true });
-          if (!inventory) {
-            order.paymentStatus = "failed";
-            await order.save();
-            return res.status(409).json({ message: "Distributor stock is no longer available." });
-          }
-          continue;
-        }
-        const product = await Product.findById(item.productId);
-
-        if (!product) continue;
-
-        const edition = product.editions?.find((candidate) => candidate.format === (item.format || item.editionKey));
-        if (edition) {
-          edition.stock = Math.max(0, Number(edition.stock || 0) - item.quantity);
-          // Keep legacy product-level availability in sync with physical
-          // editions so catalog cards and low-stock reporting do not disagree.
-          const physicalFormats = new Set(["paperback", "hardcover"]);
-          product.stock = (product.editions || [])
-            .filter((candidate) => physicalFormats.has(String(candidate.format).toLowerCase()))
-            .reduce((total, candidate) => total + Number(candidate.stock || 0), 0);
-          product.inStock = product.stock > 0;
-        } else {
-          product.stock = Math.max(0, product.stock - item.quantity);
-          product.inStock = product.stock > 0;
-        }
-
-        product.soldCount = (product.soldCount || 0) + item.quantity;
-
-        await product.save();
-
-        // Check for low stock alert
-        if (product.stock <= LOW_STOCK_THRESHOLD && product.stock > 0) {
-          const admins = await User.find({ role: "admin" }).select("_id");
-          const adminIds = admins.map((admin) => admin._id);
-
-          if (adminIds.length > 0) {
-            await notifyAdmins(
-              {
-                type: "stock.alert",
-                title: "Low Stock Alert",
-                body: `Product "${product.name}" has low stock: ${product.stock} unit(s) remaining.`,
-                link: `/admin/products/edit/${product._id}`,
-                data: { productId: product._id, stock: product.stock },
-              },
-              adminIds,
-            );
-          }
-        }
-      }
-
-      await order.save();
-
-      await Cart.findOneAndUpdate({ userId: order.userId }, { items: [] });
-
-      // Create notification for user
-      const paymentNotif = await createNotification({
-        userId: order.userId,
-        type: "payment.confirmed",
-        title: "Payment Confirmed",
-        body: `Payment for order #${order._id.toString().slice(-6).toUpperCase()} has been confirmed. Your order is now being processed.`,
-        link: `/dashboard`,
-        data: { orderId: order._id },
-      });
-
-      // Send push notification for payment confirmation
-      if (paymentNotif) {
-        const unreadCount = await countUnreadNotifications(order.userId);
-
-        await sendPushToUser(order.userId, {
-          title: "Payment Confirmed",
-          body: `Payment for order #${order._id.toString().slice(-6).toUpperCase()} confirmed. Processing order.`,
-          link: `/dashboard`,
-          badgeCount: unreadCount,
-          data: { orderId: order._id },
-        }).catch((err) => {
-          console.warn("Push notification failed (non-critical):", err);
-        });
-      }
-
-      console.log("✅ PAYMENT CONFIRMED:", reference);
+      await confirmOrderPayment(event.data);
     }
 
     res.json({
